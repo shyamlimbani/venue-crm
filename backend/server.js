@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import { env, validateEnv } from './config/env.js';
 import { setupCors, logCorsConfig } from './config/cors.js';
 import connectDB, { disconnectDB } from './config/db.js';
+import { ensureDefaultUsers } from './utils/ensureAdmin.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 import authRoutes from './routes/authRoutes.js';
@@ -52,7 +53,9 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── 4. API routes (auth login, bookings, etc.) ──────────────────────────────
+// ─── 4. API routes ───────────────────────────────────────────────────────────
+// Auth: mount at /auth AND /api/auth (frontend may call either depending on VITE_API_URL)
+app.use('/auth', authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -75,6 +78,7 @@ const startServer = async () => {
 
   try {
     await connectDB();
+    await ensureDefaultUsers();
 
     httpServer = app.listen(PORT, HOST, () => {
       console.log('✅ Server running successfully');

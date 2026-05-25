@@ -19,10 +19,16 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, role) => {
     const { data } = await api.post('/auth/login', { email, password, role });
-    localStorage.setItem('token', data.data.token);
-    localStorage.setItem('user', JSON.stringify(data.data));
-    setUser(data.data);
-    return data.data;
+    const token = data.token || data.data?.token;
+    const user = data.user || data.data;
+    if (!token || !user) {
+      throw new Error('Invalid login response from server');
+    }
+    const session = { ...user, token };
+    localStorage.setItem('token', token);
+    localStorage.setItem('user', JSON.stringify(session));
+    setUser(session);
+    return session;
   };
 
   const logout = () => {
