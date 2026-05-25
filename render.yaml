@@ -1,0 +1,14 @@
+# Render Blueprint — set Root Directory to "backend" if not using this file
+services:
+  - type: web
+    name: venue-crm-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: JWT_EXPIRE
+        value: 7d

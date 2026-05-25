@@ -1,4 +1,4 @@
-import dns from 'dns';
+import dns from 'node:dns';
 
 /** Prefer IPv4; use public DNS (helps Windows querySrv ECONNREFUSED) */
 dns.setDefaultResultOrder('ipv4first');
