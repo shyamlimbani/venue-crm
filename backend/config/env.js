@@ -8,7 +8,6 @@ const envPath = path.resolve(__dirname, '../.env');
 
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Local: load .env file | Render: uses dashboard env vars (dotenv won't override them)
 if (!isProduction) {
   const result = dotenv.config({ path: envPath });
   if (result.error) {
@@ -29,7 +28,8 @@ export const env = {
   MONGO_URI_STANDARD,
   JWT_SECRET: process.env.JWT_SECRET,
   JWT_EXPIRE: process.env.JWT_EXPIRE || '7d',
-  CORS_ORIGIN: process.env.CORS_ORIGIN || process.env.CLIENT_URL || '*',
+  // Comma-separated extra origins (do NOT use * with credentials: true)
+  CORS_ORIGIN: process.env.CORS_ORIGIN || process.env.CLIENT_URL || '',
 };
 
 export function validateEnv() {

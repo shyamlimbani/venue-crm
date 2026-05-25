@@ -1,12 +1,11 @@
 /**
- * Venue CRM API — ES Module entry point (Render / production ready)
+ * Venue CRM API — ES Module entry point (Render + Vercel CORS ready)
  */
 import express from 'express';
-import cors from 'cors';
 import mongoose from 'mongoose';
 
-// Load environment variables first (local .env + Render dashboard vars)
 import { env, validateEnv } from './config/env.js';
+import { setupCors, logCorsConfig } from './config/cors.js';
 import connectDB, { disconnectDB } from './config/db.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
 
@@ -20,26 +19,17 @@ import reportRoutes from './routes/reportRoutes.js';
 
 const app = express();
 
-// Render sets PORT automatically — always prefer process.env.PORT
 const PORT = Number(process.env.PORT) || env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
 
-// ─── Middleware ───────────────────────────────────────────────────────────────
-const corsOrigins = env.CORS_ORIGIN
-  ? env.CORS_ORIGIN.split(',').map((o) => o.trim())
-  : true;
+// ─── 1. CORS first (before any routes / JSON parser) ─────────────────────────
+setupCors(app);
 
-app.use(
-  cors({
-    origin: corsOrigins,
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  })
-);
+// ─── 2. Body parsers (JSON + form for login/API) ─────────────────────────────
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// ─── Test / health routes (Render health checks) ──────────────────────────────
+// ─── 3. Health & test routes ─────────────────────────────────────────────────
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
@@ -62,7 +52,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// ─── API routes ───────────────────────────────────────────────────────────────
+// ─── 4. API routes (auth login, bookings, etc.) ──────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -71,7 +61,7 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
 
-// ─── Error handling ───────────────────────────────────────────────────────────
+// ─── 5. Errors last ──────────────────────────────────────────────────────────
 app.use(notFound);
 app.use(errorHandler);
 
@@ -90,7 +80,7 @@ const startServer = async () => {
       console.log('✅ Server running successfully');
       console.log(`   URL: http://${HOST}:${PORT}`);
       console.log(`   Environment: ${env.NODE_ENV}`);
-      console.log(`   Health: http://${HOST}:${PORT}/api/health`);
+      logCorsConfig();
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
@@ -98,7 +88,6 @@ const startServer = async () => {
   }
 };
 
-// ─── Graceful shutdown (Render sends SIGTERM) ─────────────────────────────────
 const shutdown = async (signal) => {
   console.log(`\n${signal} received — shutting down gracefully...`);
   try {

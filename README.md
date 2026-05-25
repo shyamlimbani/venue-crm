@@ -150,6 +150,23 @@ NODE_ENV=production npm start
 
 Serve `frontend/dist` via nginx or static hosting. Point API to your production URL and set `VITE_API_URL` before building.
 
+## Deploy: Render (API) + Vercel (Frontend)
+
+**Render** (Root Directory: `backend`):
+```env
+NODE_ENV=production
+MONGO_URI=your_atlas_uri
+JWT_SECRET=your_secret
+CORS_ORIGIN=https://venue-crm-ten.vercel.app
+```
+
+**Vercel** (Root Directory: `frontend`):
+```env
+VITE_API_URL=https://your-backend.onrender.com/api
+```
+
+Redeploy both after changing env vars. Do not use `CORS_ORIGIN=*` with credentials enabled.
+
 ## Capacitor (Android APK)
 
 The UI is mobile-first and touch-friendly. To convert to APK:
