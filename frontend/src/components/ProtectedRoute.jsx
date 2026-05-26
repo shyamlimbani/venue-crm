@@ -18,11 +18,15 @@ export default function ProtectedRoute({ children, allowedRoles }) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    // Determine fallback based on role
-    if (user.role === 'admin') return <Navigate to="/admin-dashboard" replace />;
-    if (user.role === 'owner') return <Navigate to="/owner-dashboard" replace />;
-    return <Navigate to="/staff-dashboard" replace />;
+  if (allowedRoles) {
+    const isAllowed = allowedRoles.includes(user.role) || 
+                      (allowedRoles.includes('admin') && user.role === 'super-admin');
+    if (!isAllowed) {
+      // Determine fallback based on role
+      if (user.role === 'admin' || user.role === 'super-admin') return <Navigate to="/admin-dashboard" replace />;
+      if (user.role === 'owner') return <Navigate to="/owner-dashboard" replace />;
+      return <Navigate to="/staff-dashboard" replace />;
+    }
   }
 
   return children;

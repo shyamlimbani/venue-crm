@@ -13,17 +13,12 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const storedUser = localStorage.getItem('user');
-    
+
     if (token && storedUser) {
       setUser(JSON.parse(storedUser));
-      // Optional: verify token in background
-      api.get('/api/auth/me')
-        .then(({ data }) => setUser(data.user))
-        .catch(() => logout())
-        .finally(() => setLoading(false));
-    } else {
-      setLoading(false);
     }
+
+    setLoading(false);
   }, []);
 
   const login = async (email, password) => {
@@ -37,9 +32,10 @@ export const AuthProvider = ({ children }) => {
       toast.success('Welcome back!');
       
       // Role based redirects
-      if (data.user.role === 'admin') navigate('/admin-dashboard');
-      else if (data.user.role === 'owner') navigate('/owner-dashboard');
-      else if (data.user.role === 'staff') navigate('/staff-dashboard');
+      const role = data.user.role;
+      if (role === 'super-admin' || role === 'admin') navigate('/admin-dashboard');
+      else if (role === 'owner') navigate('/owner-dashboard');
+      else if (role === 'staff') navigate('/staff-dashboard');
       else navigate('/');
       
       return true;
@@ -63,7 +59,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const isSuperAdmin = user?.role === 'admin';
+  const isSuperAdmin = user?.role === 'super-admin' || user?.role === 'admin';
   const isOwner = user?.role === 'owner';
   const isStaff = user?.role === 'staff';
 
