@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { MODULES } from '../utils/constants';
 import SmartCalendar from '../components/calendar/SmartCalendar';
 import DailyBookingView from '../components/bookings/DailyBookingView';
+import { motion } from 'framer-motion';
 
 export default function ModulePage() {
   const { moduleId } = useParams();
@@ -16,12 +17,18 @@ export default function ModulePage() {
 
   return (
     <div className="space-y-6">
-      <div className={`card-luxury bg-gradient-to-r ${mod.color} border-luxury-gold/20`}>
-        <div className="flex items-center gap-4">
-          <span className="text-4xl">{mod.icon}</span>
+      <motion.div 
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`card-modern bg-gradient-to-r ${mod.color} border-primary/20`}
+      >
+        <div className="flex items-center gap-5">
+          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-white/5 shadow-inner border border-white/10 text-4xl">
+            {mod.icon}
+          </div>
           <div>
-            <h2 className="text-xl font-semibold text-white">{mod.label}</h2>
-            <p className="text-sm text-gray-400">
+            <h2 className="text-2xl font-bold text-white tracking-tight">{mod.label}</h2>
+            <p className="text-sm text-gray-400 mt-1 font-medium">
               {moduleId === 'cricket' && 'Time-slot booking · Duplicate prevention'}
               {moduleId === 'shooting' && 'Hourly booking · Shoot categories'}
               {moduleId === 'marriage' && 'Full-day wedding management'}
@@ -29,20 +36,24 @@ export default function ModulePage() {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-        <SmartCalendar
-          module={moduleId}
-          selectedDate={selectedDate}
-          onDateSelect={setSelectedDate}
-        />
-        <DailyBookingView
-          key={refreshKey}
-          module={moduleId}
-          date={selectedDate}
-          onRefreshCalendar={() => setRefreshKey((k) => k + 1)}
-        />
+        <motion.div initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+          <SmartCalendar
+            module={moduleId}
+            selectedDate={selectedDate}
+            onDateSelect={setSelectedDate}
+          />
+        </motion.div>
+        <motion.div initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }}>
+          <DailyBookingView
+            key={refreshKey}
+            module={moduleId}
+            date={selectedDate}
+            onRefreshCalendar={() => setRefreshKey((k) => k + 1)}
+          />
+        </motion.div>
       </div>
     </div>
   );

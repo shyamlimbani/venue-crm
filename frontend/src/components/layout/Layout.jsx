@@ -7,12 +7,14 @@ export default function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex h-screen bg-dark-bg overflow-hidden font-sans">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="flex-1 flex flex-col min-w-0 lg:ml-0">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="flex-1 p-4 pb-8 animate-fade-in overflow-x-hidden">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8 bg-dark-bg scroll-smooth">
+          <div className="max-w-7xl mx-auto animate-fade-in">
+             <Outlet />
+          </div>
         </main>
       </div>
     </div>

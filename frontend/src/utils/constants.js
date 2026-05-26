@@ -1,16 +1,16 @@
 export const MODULES = {
-  cricket: { id: 'cricket', label: 'Cricket Ground', icon: '🏏', color: 'from-green-600/30 to-emerald-900/30' },
-  shooting: { id: 'shooting', label: 'Shooting Studio', icon: '📸', color: 'from-purple-600/30 to-indigo-900/30' },
-  marriage: { id: 'marriage', label: 'Marriage Ground', icon: '💒', color: 'from-pink-600/30 to-rose-900/30' },
-  banquet: { id: 'banquet', label: 'Banquet Hall', icon: '🎉', color: 'from-amber-600/30 to-orange-900/30' },
+  cricket: { id: 'cricket', label: 'Cricket Ground', icon: '🏏', color: 'from-blue-600/20 to-blue-900/20' },
+  shooting: { id: 'shooting', label: 'Shooting Studio', icon: '📸', color: 'from-indigo-600/20 to-indigo-900/20' },
+  marriage: { id: 'marriage', label: 'Marriage Ground', icon: '💒', color: 'from-sky-600/20 to-sky-900/20' },
+  banquet: { id: 'banquet', label: 'Banquet Hall', icon: '🎉', color: 'from-cyan-600/20 to-cyan-900/20' },
 };
 
 export const MODULE_LIST = Object.values(MODULES);
 
 export const PAYMENT_COLORS = {
-  Pending: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-  Partial: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
-  Paid: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  Pending: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+  Partial: 'bg-blue-500/10 text-blue-500 border-blue-500/20',
+  Paid: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/20',
 };
 
 export const formatCurrency = (n) =>

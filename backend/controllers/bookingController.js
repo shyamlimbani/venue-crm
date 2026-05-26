@@ -3,7 +3,7 @@ import Customer from '../models/Customer.js';
 import Payment from '../models/Payment.js';
 import Notification from '../models/Notification.js';
 import { MODULE_LABELS } from '../config/modules.js';
-import { checkDuplicateBooking } from '../utils/calendarHelper.js';
+import { validateBookingConflict } from '../utils/calendarHelper.js';
 import { calcPaymentStatus, calcRemaining } from '../utils/paymentHelper.js';
 
 const upsertCustomer = async (name, mobile, totalAmount, advanceAmount) => {
@@ -47,11 +47,14 @@ export const createBooking = async (req, res) => {
       totalAmount,
       advanceAmount,
       notes,
+      startTime,
+      endTime,
+      peopleCount,
     } = req.body;
 
-    const isDuplicate = await checkDuplicateBooking(module, date, timeSlot);
-    if (isDuplicate) {
-      return res.status(409).json({ success: false, message: 'This slot is already booked' });
+    const conflictResult = await validateBookingConflict(module, date, req.body);
+    if (conflictResult.conflict) {
+      return res.status(409).json({ success: false, message: conflictResult.message });
     }
 
     const remaining = calcRemaining(Number(totalAmount), Number(advanceAmount || 0));
@@ -64,7 +67,7 @@ export const createBooking = async (req, res) => {
       mobile,
       module,
       date: new Date(date),
-      timeSlot,
+      timeSlot: timeSlot || '',
       bookingType: bookingType || '',
       shootCategory: shootCategory || '',
       guestCount: guestCount || 0,
@@ -76,6 +79,11 @@ export const createBooking = async (req, res) => {
       paymentStatus,
       notes: notes || '',
       createdBy: req.user._id,
+      bookingOwnerId: req.user._id,
+      bookingOwnerName: req.user.name,
+      startTime: startTime || '',
+      endTime: endTime || '',
+      peopleCount: peopleCount || 0,
     });
 
     if (advanceAmount > 0) {
@@ -108,17 +116,19 @@ export const updateBooking = async (req, res) => {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
 
-    const { date, timeSlot, module } = { ...booking.toObject(), ...req.body };
-    if (req.body.date || req.body.timeSlot || req.body.module) {
-      const isDuplicate = await checkDuplicateBooking(
-        module || booking.module,
-        date || booking.date,
-        timeSlot || booking.timeSlot,
-        booking._id
-      );
-      if (isDuplicate) {
-        return res.status(409).json({ success: false, message: 'This slot is already booked' });
-      }
+    if (booking.bookingOwnerId && booking.bookingOwnerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: "You cannot modify another owner's booking" });
+    }
+
+    const mergedDetails = { ...booking.toObject(), ...req.body };
+    const conflictResult = await validateBookingConflict(
+      mergedDetails.module,
+      mergedDetails.date,
+      mergedDetails,
+      booking._id
+    );
+    if (conflictResult.conflict) {
+      return res.status(409).json({ success: false, message: conflictResult.message });
     }
 
     const total = req.body.totalAmount ?? booking.totalAmount;
@@ -150,6 +160,10 @@ export const deleteBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+
+    if (booking.bookingOwnerId && booking.bookingOwnerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: "You cannot modify another owner's booking" });
+    }
 
     booking.status = 'cancelled';
     await booking.save();
@@ -207,6 +221,10 @@ export const markPaid = async (req, res) => {
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
 
+    if (booking.bookingOwnerId && booking.bookingOwnerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: "You cannot modify another owner's booking" });
+    }
+
     const amount = booking.remainingAmount;
     booking.advanceAmount = booking.totalAmount;
     booking.remainingAmount = 0;
@@ -242,6 +260,10 @@ export const updatePayment = async (req, res) => {
     const { amount } = req.body;
     const booking = await Booking.findById(req.params.id);
     if (!booking) return res.status(404).json({ success: false, message: 'Booking not found' });
+
+    if (booking.bookingOwnerId && booking.bookingOwnerId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+      return res.status(403).json({ success: false, message: "You cannot modify another owner's booking" });
+    }
 
     const payAmount = Math.min(Number(amount), booking.remainingAmount);
     booking.advanceAmount += payAmount;

@@ -1,37 +1,114 @@
 import { MODULES, PAYMENT_COLORS, formatCurrency, formatDate } from '../../utils/constants';
+import { motion } from 'framer-motion';
+import { Phone, Calendar, Clock, Banknote, Edit2, Eye, Trash2, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkPaid }) {
+  const { user } = useAuth();
   const moduleLabel = MODULES[booking.module]?.label || booking.module;
+  
+  const canEdit = user?.role === 'admin' || (booking.bookingOwnerId === user?._id);
+
+  const getBookingTypeLabel = (type) => {
+    if (type === 'full-day') return 'Full Day';
+    if (type === 'morning') return 'Morning Half Day';
+    if (type === 'evening') return 'Evening Half Day';
+    return type || 'Standard Booking';
+  };
 
   return (
-    <div className="card-luxury animate-slide-up">
-      <div className="flex justify-between items-start gap-2 mb-3">
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="card-modern hover:border-primary/50 transition-colors group"
+    >
+      <div className="flex justify-between items-start gap-4 mb-4">
         <div>
-          <h3 className="font-semibold text-white">{booking.customerName}</h3>
-          <a href={`tel:${booking.mobile}`} className="text-sm text-luxury-gold">{booking.mobile}</a>
+          <div className="flex items-center gap-2">
+            <h3 className="font-bold text-white text-lg">{booking.customerName}</h3>
+            {booking.bookingOwnerName && (
+              <span className="flex items-center gap-1 text-[10px] bg-primary/20 text-primary-light px-2 py-0.5 rounded-full border border-primary/30">
+                <ShieldCheck size={10} />
+                {booking.bookingOwnerName}
+              </span>
+            )}
+          </div>
+          <a href={`tel:${booking.mobile}`} className="flex items-center gap-1.5 text-sm text-primary-light mt-1 hover:underline">
+            <Phone size={14} />
+            {booking.mobile}
+          </a>
         </div>
-        <span className={`text-xs px-2 py-1 rounded-full border ${PAYMENT_COLORS[booking.paymentStatus]}`}>
+        <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${PAYMENT_COLORS[booking.paymentStatus]}`}>
           {booking.paymentStatus}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm text-gray-400 mb-4">
-        <div><span className="text-gray-600">Module</span><p className="text-white">{moduleLabel}</p></div>
-        <div><span className="text-gray-600">Type</span><p className="text-white">{booking.bookingType || booking.shootCategory || '—'}</p></div>
-        <div><span className="text-gray-600">Date</span><p className="text-white">{formatDate(booking.date)}</p></div>
-        <div><span className="text-gray-600">Slot</span><p className="text-white">{booking.timeSlot}</p></div>
-        <div><span className="text-gray-600">Advance</span><p className="text-emerald-400">{formatCurrency(booking.advanceAmount)}</p></div>
-        <div><span className="text-gray-600">Remaining</span><p className="text-yellow-400">{formatCurrency(booking.remainingAmount)}</p></div>
+      <div className="grid grid-cols-2 gap-4 text-sm mb-5 p-3 rounded-xl bg-slate-900/50 border border-dark-border">
+        <div>
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+            <Calendar size={12} /> Date & Schedule
+          </span>
+          <p className="text-gray-200 font-medium">{formatDate(booking.date)}</p>
+          <p className="text-gray-400 text-xs mt-0.5">
+            {booking.module === 'cricket' && 'Full Day Booking'}
+            {booking.module === 'shooting' && `${booking.startTime} - ${booking.endTime}`}
+            {(booking.module === 'marriage' || booking.module === 'banquet') && getBookingTypeLabel(booking.bookingType)}
+            {!['cricket', 'shooting', 'marriage', 'banquet'].includes(booking.module) && booking.timeSlot}
+          </p>
+        </div>
+        
+        <div>
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
+            <Clock size={12} /> Venue Details
+          </span>
+          <p className="text-gray-200 font-medium">{moduleLabel}</p>
+          <p className="text-gray-400 text-xs mt-0.5">
+            {booking.module === 'shooting' && `${booking.peopleCount || 0} People`}
+            {booking.module === 'marriage' && `${booking.guestCount || 0} Guests`}
+            {booking.module === 'cricket' && `🔒 Fully Booked`}
+            {booking.module === 'banquet' && `Banquet Event`}
+            {!['cricket', 'shooting', 'marriage', 'banquet'].includes(booking.module) && 'Active'}
+          </p>
+        </div>
+
+        <div className="col-span-2 border-t border-dark-border pt-3 mt-1">
+          <div className="flex justify-between items-center">
+            <div>
+              <span className="text-xs text-gray-500 block mb-0.5">Advance Paid</span>
+              <p className="text-emerald-400 font-medium">{formatCurrency(booking.advanceAmount)}</p>
+            </div>
+            <div className="text-right">
+              <span className="text-xs text-gray-500 block mb-0.5">Remaining Balance</span>
+              <p className="text-amber-400 font-bold">{formatCurrency(booking.remainingAmount)}</p>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button onClick={() => onView(booking)} className="btn-outline text-xs flex-1 min-w-[70px] min-h-[40px]">View</button>
-        <button onClick={() => onEdit(booking)} className="btn-outline text-xs flex-1 min-w-[70px] min-h-[40px]">Edit</button>
-        <button onClick={() => onCancel(booking)} className="text-xs flex-1 min-w-[70px] min-h-[40px] px-3 py-2 rounded-lg border border-red-500/50 text-red-400 hover:bg-red-500/10">Cancel</button>
-        {booking.paymentStatus !== 'Paid' && (
-          <button onClick={() => onMarkPaid(booking)} className="btn-gold text-xs flex-1 min-w-[70px] min-h-[40px]">Mark Paid</button>
+        <button onClick={() => onView(booking)} className="btn-outline text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5">
+          <Eye size={14} /> View
+        </button>
+        {canEdit ? (
+          <>
+            <button onClick={() => onEdit(booking)} className="btn-outline text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5">
+              <Edit2 size={14} /> Edit
+            </button>
+            <button onClick={() => onCancel(booking)} className="text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-colors">
+              <Trash2 size={14} /> Cancel
+            </button>
+            {booking.paymentStatus !== 'Paid' && (
+              <button onClick={() => onMarkPaid(booking)} className="btn-primary text-xs flex-[2] min-w-[100px] min-h-[36px] flex justify-center items-center gap-1.5">
+                <CheckCircle2 size={14} /> Mark Paid
+              </button>
+            )}
+          </>
+        ) : (
+          <div className="flex-[3] text-center text-xs text-gray-500 flex items-center justify-center p-2 bg-slate-800/50 rounded-lg border border-gray-700">
+            Only {booking.bookingOwnerName || 'owner'} can modify this
+          </div>
         )}
       </div>
-    </div>
+    </motion.div>
   );
 }

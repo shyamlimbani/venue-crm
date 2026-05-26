@@ -17,6 +17,8 @@ import customerRoutes from './routes/customerRoutes.js';
 import calendarRoutes from './routes/calendarRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
+import userRoutes from './routes/userRoutes.js';
+import { restrictTo } from './middleware/auth.js';
 
 const app = express();
 
@@ -54,8 +56,6 @@ app.get('/api/health', (req, res) => {
 });
 
 // ─── 4. API routes ───────────────────────────────────────────────────────────
-// Auth: mount at /auth AND /api/auth (frontend may call either depending on VITE_API_URL)
-app.use('/auth', authRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/dashboard', dashboardRoutes);
@@ -63,6 +63,7 @@ app.use('/api/customers', customerRoutes);
 app.use('/api/calendar', calendarRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/users', userRoutes);
 
 // ─── 5. Errors last ──────────────────────────────────────────────────────────
 app.use(notFound);

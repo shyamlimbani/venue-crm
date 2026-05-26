@@ -9,11 +9,12 @@ import {
   markPaid,
   updatePayment,
 } from '../controllers/bookingController.js';
-import { protect } from '../middleware/auth.js';
+import { protect, requireModuleAccess } from '../middleware/auth.js';
 
 const router = express.Router();
 
 router.use(protect);
+router.use(requireModuleAccess);
 
 router.post('/', createBooking);
 router.get('/date', getBookingsByDate);

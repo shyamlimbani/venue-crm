@@ -33,6 +33,11 @@ const bookingSchema = new mongoose.Schema(
     },
     notes: { type: String, default: '' },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    bookingOwnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    bookingOwnerName: { type: String, default: '' },
+    startTime: { type: String, default: '' },
+    endTime: { type: String, default: '' },
+    peopleCount: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

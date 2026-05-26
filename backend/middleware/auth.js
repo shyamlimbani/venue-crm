@@ -24,9 +24,32 @@ export const protect = async (req, res, next) => {
   }
 };
 
-export const adminOnly = (req, res, next) => {
-  if (req.user?.role !== 'admin') {
-    return res.status(403).json({ success: false, message: 'Admin access required' });
+export const restrictTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user?.role)) {
+      return res.status(403).json({ success: false, message: 'You do not have permission to perform this action' });
+    }
+    next();
+  };
+};
+
+export const requireModuleAccess = (req, res, next) => {
+  // Admins and owners bypass module restrictions
+  if (req.user?.role === 'admin' || req.user?.role === 'owner') {
+    return next();
   }
-  next();
+  
+  const moduleName = req.params.module || req.body.module || req.query.module;
+
+  if (!moduleName) {
+    // If we cannot determine the module from the request, let the controller handle it safely
+    return next();
+  }
+
+  // Staff must have the module assigned
+  if (req.user?.role === 'staff' && req.user.assignedModules && req.user.assignedModules.includes(moduleName)) {
+    return next();
+  }
+  
+  return res.status(403).json({ success: false, message: `Access denied to ${moduleName} module` });
 };
