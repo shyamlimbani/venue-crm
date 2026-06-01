@@ -5,7 +5,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 
 import { env, validateEnv } from './config/env.js';
-import { setupCors, logCorsConfig } from './config/cors.js';
+import cors from 'cors';
 import connectDB, { disconnectDB } from './config/db.js';
 import { ensureDefaultUsers } from './utils/ensureAdmin.js';
 import { errorHandler, notFound } from './middleware/errorHandler.js';
@@ -26,7 +26,38 @@ const PORT = Number(process.env.PORT) || env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
 
 // ─── 1. CORS first (before any routes / JSON parser) ─────────────────────────
-setupCors(app);
+const allowedOrigins = [
+  'http://localhost:5173',
+  'http://127.0.0.1:5173'
+];
+
+if (process.env.CORS_ORIGIN) {
+  const customOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
+  customOrigins.forEach(o => {
+    if (o && !allowedOrigins.includes(o)) allowedOrigins.push(o);
+  });
+} else {
+  allowedOrigins.push('https://venue-crm-ten.vercel.app');
+}
+
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, curl, postman)
+    if (!origin) return callback(null, true);
+    
+    const isAllowed = allowedOrigins.includes(origin) || /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  optionsSuccessStatus: 200
+}));
 
 // ─── 2. Body parsers (JSON + form for login/API) ─────────────────────────────
 app.use(express.json({ limit: '10mb' }));
@@ -34,12 +65,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // ─── 3. Health & test routes ─────────────────────────────────────────────────
 app.get('/', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Venue CRM API is online',
-    environment: env.NODE_ENV,
-    timestamp: new Date().toISOString(),
-  });
+  res.send('API Running');
 });
 
 app.get('/api/health', (req, res) => {
@@ -85,7 +111,7 @@ const startServer = async () => {
       console.log('✅ Server running successfully');
       console.log(`   URL: http://${HOST}:${PORT}`);
       console.log(`   Environment: ${env.NODE_ENV}`);
-      logCorsConfig();
+      console.log('   CORS configured for development and production.');
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
