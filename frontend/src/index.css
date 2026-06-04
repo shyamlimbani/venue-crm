@@ -44,10 +44,10 @@
     @apply bg-white border-dark-border text-gray-900;
   }
   .cal-full {
-    @apply bg-green-600 border-green-600 text-white;
+    @apply bg-white border-dark-border border-l-4 border-l-red-500 text-gray-900;
   }
   .cal-partial {
-    @apply bg-green-50 border-green-200 text-green-800;
+    @apply bg-white border-dark-border border-l-4 border-l-green-500 text-gray-900;
   }
 }
 

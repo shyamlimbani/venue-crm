@@ -122,24 +122,18 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
     if (!count || count <= 0) return null;
 
     if (isFullCell) {
-      if (count === 1) {
-        return (
-          <span 
-            className="w-1.5 h-1.5 rounded-full bg-white shrink-0 shadow-sm" 
-            title="1 Booking"
-          />
-        );
-      }
+      // Fully booked: light red badge
       return (
         <span 
-          className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-white text-green-900 shrink-0 shadow-sm"
-          title={`${count} Bookings`}
+          className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200 shrink-0 shadow-sm"
+          title="Fully Booked"
         >
           {count}
         </span>
       );
     }
 
+    // Booked Date: Green dot (1 booking)
     if (count === 1) {
       return (
         <span 
@@ -148,19 +142,11 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
         />
       );
     }
-    if (count <= 5) {
-      return (
-        <span 
-          className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 shrink-0 shadow-sm"
-          title={`${count} Bookings`}
-        >
-          {count}
-        </span>
-      );
-    }
+
+    // Multiple Bookings: Green badge (2-5 bookings)
     return (
       <span 
-        className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-green-800 text-white border border-green-900 shrink-0 shadow-sm"
+        className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 shrink-0 shadow-sm"
         title={`${count} Bookings`}
       >
         {count}
@@ -180,15 +166,15 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
         className={`rounded-xl border text-sm font-medium transition-all duration-200
           flex flex-col items-center justify-start p-1 sm:py-2 gap-0.5 min-h-[48px] sm:min-h-[80px] md:min-h-[100px] lg:min-h-[120px] w-full
           ${statusClass[st]} ${
-            isTodayDate ? 'border-2 border-black font-bold' : ''
+            isTodayDate ? 'ring-1 ring-black ring-offset-1 font-bold z-10' : ''
           } ${
             isSelected
-              ? 'ring-2 ring-black ring-offset-2 scale-105 z-10 font-semibold shadow-sm'
+              ? 'ring-2 ring-black ring-offset-2 scale-105 z-20 font-semibold shadow-sm'
               : 'hover:scale-[1.03] hover:bg-gray-50'
           }`}
       >
         <div className="flex items-center justify-center gap-1.5">
-          <span className={isSelected ? 'text-black font-bold' : st === 'full' ? 'text-white font-bold' : 'text-gray-800'}>
+          <span className={isSelected ? 'text-black font-bold' : 'text-gray-800 font-semibold'}>
             {dayNum}
           </span>
           {renderIndicator(info?.count, st === 'full')}
@@ -199,53 +185,18 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
           <div className="hidden md:flex flex-col gap-1 mt-1.5 w-full px-1 overflow-hidden">
             {info.bookings.slice(0, 3).map((b) => {
               const firstOwnerName = b.bookingOwnerName?.split(' ')[0] || 'Owner';
-              if (module === 'cricket') {
-                return (
-                  <span
-                    key={b._id}
-                    className="text-[9px] bg-black text-white border border-black truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm"
-                  >
-                    🔒 {firstOwnerName}
-                  </span>
-                );
-              }
-              if (module === 'shooting') {
-                return (
-                  <span
-                    key={b._id}
-                    className="text-[9px] bg-gray-100 text-gray-800 border border-gray-300 truncate px-1 py-0.5 rounded-md font-medium text-center w-full block shadow-sm"
-                  >
-                    {b.startTime?.replace(/\s*(AM|PM)/i, '')}-{b.endTime?.replace(/\s*(AM|PM)/i, '')}
-                  </span>
-                );
-              }
-              if (module === 'marriage' || module === 'banquet') {
-                const typeLabel = b.bookingType === 'full-day' ? 'Full' : b.bookingType === 'morning' ? 'Morning' : 'Evening';
-                const typeColor = b.bookingType === 'full-day'
-                  ? 'bg-black text-white border-black'
-                  : b.bookingType === 'morning'
-                    ? 'bg-gray-100 text-gray-700 border-gray-200'
-                    : 'bg-gray-200 text-gray-800 border-gray-300';
-                return (
-                  <span
-                    key={b._id}
-                    className={`text-[9px] ${typeColor} truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm`}
-                  >
-                    {typeLabel}
-                  </span>
-                );
-              }
+              const venueLabel = MODULES[b.module]?.label || b.module;
               return (
                 <span
                   key={b._id}
-                  className="text-[9px] bg-gray-50 text-gray-600 border border-dark-border truncate px-1 py-0.5 rounded-md font-medium text-center w-full block shadow-sm"
+                  className="text-[8px] bg-gray-50 text-gray-700 border border-gray-250 truncate px-1.5 py-0.5 rounded-full font-semibold text-left w-full block shadow-sm"
                 >
-                  {b.timeSlot}
+                  {firstOwnerName} · {b.customerName} · {venueLabel}
                 </span>
               );
             })}
             {info.bookings.length > 3 && (
-              <span className="text-[9px] text-gray-500 font-semibold mt-0.5 block text-center">
+              <span className="text-[8px] text-gray-500 font-semibold mt-0.5 block text-center">
                 +{info.bookings.length - 3} more
               </span>
             )}
@@ -258,11 +209,11 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
             {info.bookings.slice(0, 3).map((b, idx) => (
               <span
                 key={b._id || idx}
-                className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-black' : st === 'full' ? 'bg-white' : 'bg-gray-600'}`}
+                className={`w-1.5 h-1.5 rounded-full ${st === 'full' ? 'bg-red-500' : 'bg-green-500'}`}
               />
             ))}
             {info.bookings.length > 3 && (
-              <span className={`text-[8px] font-bold leading-none ${isSelected ? 'text-black' : st === 'full' ? 'text-white' : 'text-gray-600'}`}>
+              <span className={`text-[8px] font-bold leading-none ${st === 'full' ? 'text-red-700' : 'text-green-700'}`}>
                 +
               </span>
             )}
@@ -339,13 +290,13 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
         {/* Legend */}
         <div className="flex gap-4 mb-2 text-xs font-medium">
           <span className="flex items-center gap-2 text-gray-500">
-            <span className="w-3 h-3 rounded-full bg-white border border-gray-300" /> Available
+            <span className="w-3.5 h-3.5 rounded-sm bg-white border border-gray-300" /> Available
           </span>
           <span className="flex items-center gap-2 text-gray-500">
-            <span className="w-3 h-3 rounded-full bg-green-50 border border-green-200" /> Booked
+            <span className="w-3.5 h-3.5 rounded-sm bg-white border border-gray-200 border-l-2 border-l-green-500" /> Booked
           </span>
           <span className="flex items-center gap-2 text-gray-500">
-            <span className="w-3 h-3 rounded-full bg-green-600 border border-green-600" /> Fully Booked
+            <span className="w-3.5 h-3.5 rounded-sm bg-white border border-gray-200 border-l-2 border-l-red-500" /> Fully Booked
           </span>
         </div>
 
