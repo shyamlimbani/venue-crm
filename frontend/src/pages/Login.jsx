@@ -16,43 +16,43 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
-      <div className="w-full max-w-md bg-[#111827] rounded-2xl shadow-2xl border border-gray-800 p-8">
+    <div className="min-h-screen bg-secondary-bg flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-dark-border p-8">
         
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-600/10 mb-4">
-            <LayoutDashboard size={32} className="text-blue-500" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 border border-gray-200 mb-4">
+            <LayoutDashboard size={32} className="text-black" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Venue CRM</h1>
-          <p className="text-gray-400">Sign in to manage your venues</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">Venue CRM</h1>
+          <p className="text-gray-500">Sign in to manage your venues</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Email Address</label>
+            <label className="text-sm font-semibold text-gray-700">Email Address</label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-[#0F172A] border border-gray-700 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full bg-white border border-dark-border text-gray-900 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all"
                 placeholder="you@venuecrm.com"
               />
             </div>
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-300">Password</label>
+            <label className="text-sm font-semibold text-gray-700">Password</label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-[#0F172A] border border-gray-700 text-white rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="w-full bg-white border border-dark-border text-gray-900 rounded-lg py-3 pl-10 pr-4 focus:outline-none focus:ring-1 focus:ring-black focus:border-black transition-all"
                 placeholder="••••••••"
               />
             </div>
@@ -61,7 +61,7 @@ export default function Login() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-black hover:bg-gray-800 text-white font-medium py-3 rounded-lg transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             {isLoading ? (
               <Loader2 className="animate-spin" size={20} />
@@ -71,10 +71,10 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="mt-8 text-center text-sm text-gray-500">
-          <p>Super Admin: admin@venuecrm.com</p>
-          <p>Owner: owner@venuecrm.com</p>
-          <p>Staff: studio@venuecrm.com</p>
+        <div className="mt-8 text-center text-xs text-gray-500 space-y-1">
+          <p>Super Admin: admin@venuecrm.com · Password: 123456</p>
+          <p>Owner: owner@venuecrm.com · Password: 123456</p>
+          <p>Staff: studio@venuecrm.com · Password: 123456</p>
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-slate-900/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
           <motion.div
@@ -33,11 +33,11 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md' })
             className={`relative w-full ${sizes[size]} bg-card-bg border border-dark-border
               rounded-t-2xl sm:rounded-2xl max-h-[90dvh] overflow-hidden shadow-2xl flex flex-col`}
           >
-            <div className="flex items-center justify-between px-6 py-4 border-b border-dark-border bg-slate-900/50">
-              <h2 className="text-lg font-semibold text-white tracking-tight">{title}</h2>
+            <div className="flex items-center justify-between px-6 py-4 border-b border-dark-border bg-gray-50">
+              <h2 className="text-lg font-semibold text-gray-900 tracking-tight">{title}</h2>
               <button
                 onClick={onClose}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/10 text-gray-400 hover:text-white transition-colors"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-200 text-gray-500 hover:text-black transition-colors"
                 aria-label="Close"
               >
                 <X size={18} />

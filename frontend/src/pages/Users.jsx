@@ -8,9 +8,9 @@ import Modal from '../components/ui/Modal';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const ROLES = {
-  admin: { label: 'Super Admin', color: 'bg-red-500/10 text-red-400 border-red-500/20', icon: ShieldAlert },
-  owner: { label: 'Owner', color: 'bg-primary/10 text-primary-light border-primary/20', icon: ShieldCheck },
-  staff: { label: 'Staff', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20', icon: Shield },
+  admin: { label: 'Super Admin', color: 'bg-black text-white border-black font-semibold shadow-sm', icon: ShieldAlert },
+  owner: { label: 'Owner', color: 'bg-gray-100 text-gray-800 border-gray-200', icon: ShieldCheck },
+  staff: { label: 'Staff', color: 'bg-gray-200 text-gray-700 border-gray-300', icon: Shield },
 };
 
 const MODULES = [
@@ -123,11 +123,11 @@ export default function Users() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <UserCog className="text-primary-light" />
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <UserCog className="text-black" />
             User Management
           </h1>
-          <p className="text-gray-400 text-sm mt-1">Manage owners, staff, and system access</p>
+          <p className="text-gray-500 text-sm mt-1">Manage owners, staff, and system access</p>
         </div>
         <button onClick={() => openModal()} className="btn-primary flex items-center gap-2">
           <UserPlus size={18} />
@@ -135,12 +135,12 @@ export default function Users() {
         </button>
       </div>
 
-      <div className="flex gap-2 p-1 bg-slate-900 rounded-lg w-fit">
+      <div className="flex gap-2 p-1 bg-gray-100 rounded-lg w-fit border border-gray-200 shadow-inner">
         {['all', 'admin', 'owner', 'staff'].map((r) => (
           <button
             key={r}
             onClick={() => setFilter(r)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all capitalize ${filter === r ? 'bg-primary text-white shadow-sm' : 'text-gray-400 hover:text-gray-200 hover:bg-slate-800'}`}
+            className={`px-4 py-2 rounded-md text-sm font-semibold transition-all capitalize ${filter === r ? 'bg-black text-white shadow-sm' : 'text-gray-500 hover:text-black hover:bg-gray-200/50'}`}
           >
             {r}
           </button>
@@ -159,16 +159,16 @@ export default function Users() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="card-modern relative overflow-hidden group"
+                className="card-modern relative overflow-hidden group border border-gray-200 bg-white"
               >
                 {!user.isActive && (
-                  <div className="absolute top-0 right-0 bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-1 rounded-bl-lg border-b border-l border-red-500/20">
+                  <div className="absolute top-0 right-0 bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-1 rounded-bl-lg border-b border-l border-gray-200">
                     INACTIVE
                   </div>
                 )}
                 
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 rounded-full bg-slate-800 border border-dark-border flex items-center justify-center text-xl font-bold text-white overflow-hidden">
+                  <div className="w-12 h-12 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-800 overflow-hidden">
                     {user.profileImage ? (
                       <img src={user.profileImage} alt={user.name} className="w-full h-full object-cover" />
                     ) : (
@@ -176,7 +176,7 @@ export default function Users() {
                     )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className={`font-bold text-lg truncate ${!user.isActive ? 'text-gray-500' : 'text-white'}`}>{user.name}</h3>
+                    <h3 className={`font-bold text-lg truncate ${!user.isActive ? 'text-gray-400' : 'text-gray-900'}`}>{user.name}</h3>
                     <div className="flex items-center gap-2 mt-1">
                       <span className={`flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border uppercase tracking-wider ${ROLES[user.role]?.color}`}>
                         <RoleIcon size={10} />
@@ -187,26 +187,26 @@ export default function Users() {
                 </div>
 
                 <div className="mt-5 space-y-2 text-sm">
-                  <div className="flex items-center gap-2 text-gray-400">
-                    <Mail size={14} className="text-gray-500" />
+                  <div className="flex items-center gap-2 text-gray-500">
+                    <Mail size={14} className="text-gray-400" />
                     <span className="truncate">{user.email}</span>
                   </div>
                   {user.mobile && (
-                    <div className="flex items-center gap-2 text-gray-400">
-                      <Phone size={14} className="text-gray-500" />
+                    <div className="flex items-center gap-2 text-gray-500">
+                      <Phone size={14} className="text-gray-400" />
                       <span>{user.mobile}</span>
                     </div>
                   )}
                 </div>
 
                 {user.role === 'staff' && user.assignedModules?.length > 0 && (
-                  <div className="mt-4 pt-4 border-t border-dark-border">
-                    <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">Assigned Venues</p>
+                  <div className="mt-4 pt-4 border-t border-gray-100">
+                    <p className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">Assigned Venues</p>
                     <div className="flex flex-wrap gap-1.5">
                       {user.assignedModules.map(mod => {
                         const mInfo = MODULES.find(m => m.id === mod);
                         return (
-                          <span key={mod} className="text-[10px] font-medium bg-slate-800 text-gray-300 px-2 py-1 rounded-md border border-dark-border">
+                          <span key={mod} className="text-[10px] font-medium bg-gray-50 text-gray-600 px-2 py-1 rounded-md border border-gray-200">
                             {mInfo?.label || mod}
                           </span>
                         );
@@ -215,12 +215,12 @@ export default function Users() {
                   </div>
                 )}
 
-                <div className="mt-5 pt-4 border-t border-dark-border flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="mt-5 pt-4 border-t border-gray-100 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button onClick={() => openModal(user)} className="btn-outline flex-1 py-1.5 min-h-0 text-xs flex justify-center items-center gap-1.5">
                     <Pencil size={14} /> Edit
                   </button>
                   {user.role !== 'admin' && (
-                    <button onClick={() => handleDelete(user._id)} className="btn-outline flex-1 py-1.5 min-h-0 text-xs flex justify-center items-center gap-1.5 text-red-400 hover:bg-red-500/10 hover:border-red-500/30">
+                    <button onClick={() => handleDelete(user._id)} className="btn-outline flex-1 py-1.5 min-h-0 text-xs flex justify-center items-center gap-1.5 text-red-600 hover:bg-red-50 hover:border-red-200 border-gray-200">
                       <Trash2 size={14} /> Delete
                     </button>
                   )}
@@ -235,27 +235,27 @@ export default function Users() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div className="col-span-2">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Full Name *</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Full Name *</label>
               <input type="text" value={form.name} onChange={e => setForm({...form, name: e.target.value})} className="input-modern" required />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Email *</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Email *</label>
               <input type="email" value={form.email} onChange={e => setForm({...form, email: e.target.value})} className="input-modern" required />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Mobile</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Mobile</label>
               <input type="tel" value={form.mobile} onChange={e => setForm({...form, mobile: e.target.value})} className="input-modern" />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Role *</label>
-              <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="input-modern bg-slate-900" required>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Role *</label>
+              <select value={form.role} onChange={e => setForm({...form, role: e.target.value})} className="input-modern bg-white text-gray-900" required>
                 <option value="staff">Staff</option>
                 <option value="owner">Owner</option>
                 <option value="admin">Super Admin</option>
               </select>
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">
                 {editingUser ? 'New Password (leave blank to keep current)' : 'Password *'}
               </label>
               <input type="password" value={form.password} onChange={e => setForm({...form, password: e.target.value})} className="input-modern" required={!editingUser} minLength={6} />
@@ -264,17 +264,17 @@ export default function Users() {
 
           {form.role === 'staff' && (
             <div className="col-span-2 pt-2">
-              <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2 block">Assigned Venues</label>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 block">Assigned Venues</label>
               <div className="grid grid-cols-2 gap-2">
                 {MODULES.map(mod => (
-                  <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${form.assignedModules.includes(mod.id) ? 'bg-primary/10 border-primary/50' : 'bg-slate-900 border-dark-border hover:bg-slate-800'}`}>
+                  <label key={mod.id} className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${form.assignedModules.includes(mod.id) ? 'bg-black/5 border-black' : 'bg-white border-gray-200 hover:bg-gray-50'}`}>
                     <input 
                       type="checkbox" 
                       checked={form.assignedModules.includes(mod.id)} 
                       onChange={() => handleModuleToggle(mod.id)}
-                      className="rounded border-gray-600 bg-slate-800 text-primary focus:ring-primary focus:ring-offset-slate-900" 
+                      className="rounded border-gray-300 bg-white text-black focus:ring-black focus:ring-offset-white" 
                     />
-                    <span className={`text-sm font-medium ${form.assignedModules.includes(mod.id) ? 'text-white' : 'text-gray-400'}`}>{mod.label}</span>
+                    <span className={`text-sm font-medium ${form.assignedModules.includes(mod.id) ? 'text-black font-semibold' : 'text-gray-500'}`}>{mod.label}</span>
                   </label>
                 ))}
               </div>
@@ -283,19 +283,19 @@ export default function Users() {
 
           {editingUser && (
             <div className="flex items-center gap-3 pt-2">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2 cursor-pointer">
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-2 cursor-pointer">
                 <input 
                   type="checkbox" 
                   checked={form.isActive} 
                   onChange={e => setForm({...form, isActive: e.target.checked})}
-                  className="rounded border-gray-600 bg-slate-800 text-primary focus:ring-primary focus:ring-offset-slate-900" 
+                  className="rounded border-gray-300 bg-white text-black focus:ring-black focus:ring-offset-white" 
                 />
                 Account Active
               </label>
             </div>
           )}
 
-          <div className="flex gap-3 pt-4 border-t border-dark-border mt-6">
+          <div className="flex gap-3 pt-4 border-t border-gray-200 mt-6">
             <button type="button" onClick={() => setIsModalOpen(false)} className="btn-outline flex-1">Cancel</button>
             <button type="submit" className="btn-primary flex-1">{editingUser ? 'Update User' : 'Create User'}</button>
           </div>

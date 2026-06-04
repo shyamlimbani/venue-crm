@@ -20,20 +20,20 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="card-modern hover:border-primary/50 transition-colors group"
+      className="card-modern hover:border-black/50 transition-colors group"
     >
       <div className="flex justify-between items-start gap-4 mb-4">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="font-bold text-white text-lg">{booking.customerName}</h3>
+            <h3 className="font-bold text-gray-900 text-lg">{booking.customerName}</h3>
             {booking.bookingOwnerName && (
-              <span className="flex items-center gap-1 text-[10px] bg-primary/20 text-primary-light px-2 py-0.5 rounded-full border border-primary/30">
+              <span className="flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">
                 <ShieldCheck size={10} />
                 {booking.bookingOwnerName}
               </span>
             )}
           </div>
-          <a href={`tel:${booking.mobile}`} className="flex items-center gap-1.5 text-sm text-primary-light mt-1 hover:underline">
+          <a href={`tel:${booking.mobile}`} className="flex items-center gap-1.5 text-sm text-gray-600 mt-1 hover:underline">
             <Phone size={14} />
             {booking.mobile}
           </a>
@@ -43,13 +43,13 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm mb-5 p-3 rounded-xl bg-slate-900/50 border border-dark-border">
+      <div className="grid grid-cols-2 gap-4 text-sm mb-5 p-3 rounded-xl bg-gray-50 border border-dark-border">
         <div>
           <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
             <Calendar size={12} /> Date & Schedule
           </span>
-          <p className="text-gray-200 font-medium">{formatDate(booking.date)}</p>
-          <p className="text-gray-400 text-xs mt-0.5">
+          <p className="text-gray-900 font-medium">{formatDate(booking.date)}</p>
+          <p className="text-gray-500 text-xs mt-0.5">
             {booking.module === 'cricket' && 'Full Day Booking'}
             {booking.module === 'shooting' && `${booking.startTime} - ${booking.endTime}`}
             {(booking.module === 'marriage' || booking.module === 'banquet') && getBookingTypeLabel(booking.bookingType)}
@@ -61,8 +61,8 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
           <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
             <Clock size={12} /> Venue Details
           </span>
-          <p className="text-gray-200 font-medium">{moduleLabel}</p>
-          <p className="text-gray-400 text-xs mt-0.5">
+          <p className="text-gray-900 font-medium">{moduleLabel}</p>
+          <p className="text-gray-500 text-xs mt-0.5">
             {booking.module === 'shooting' && `${booking.peopleCount || 0} People`}
             {booking.module === 'marriage' && `${booking.guestCount || 0} Guests`}
             {booking.module === 'cricket' && `🔒 Fully Booked`}
@@ -75,11 +75,11 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
           <div className="flex justify-between items-center">
             <div>
               <span className="text-xs text-gray-500 block mb-0.5">Advance Paid</span>
-              <p className="text-emerald-400 font-medium">{formatCurrency(booking.advanceAmount)}</p>
+              <p className="text-gray-900 font-medium">{formatCurrency(booking.advanceAmount)}</p>
             </div>
             <div className="text-right">
               <span className="text-xs text-gray-500 block mb-0.5">Remaining Balance</span>
-              <p className="text-amber-400 font-bold">{formatCurrency(booking.remainingAmount)}</p>
+              <p className="text-gray-900 font-bold">{formatCurrency(booking.remainingAmount)}</p>
             </div>
           </div>
         </div>
@@ -94,7 +94,7 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
             <button onClick={() => onEdit(booking)} className="btn-outline text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5">
               <Edit2 size={14} /> Edit
             </button>
-            <button onClick={() => onCancel(booking)} className="text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg border border-red-500/20 text-red-400 hover:bg-red-500/10 hover:border-red-500/50 transition-colors">
+            <button onClick={() => onCancel(booking)} className="text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:border-gray-300 hover:text-black transition-colors">
               <Trash2 size={14} /> Cancel
             </button>
             {booking.paymentStatus !== 'Paid' && (
@@ -104,7 +104,7 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
             )}
           </>
         ) : (
-          <div className="flex-[3] text-center text-xs text-gray-500 flex items-center justify-center p-2 bg-slate-800/50 rounded-lg border border-gray-700">
+          <div className="flex-[3] text-center text-xs text-gray-500 flex items-center justify-center p-2 bg-gray-50 rounded-lg border border-gray-200">
             Only {booking.bookingOwnerName || 'owner'} can modify this
           </div>
         )}

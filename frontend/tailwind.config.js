@@ -4,22 +4,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        slate: {
-          900: '#0F172A',
-          800: '#1E293B',
-          700: '#334155',
-          600: '#475569',
-        },
         primary: {
-          DEFAULT: '#2563EB', // blue-600
-          light: '#3B82F6',   // blue-500
-          dark: '#1D4ED8',    // blue-700
+          DEFAULT: '#000000', // pure black accent
+          light: '#374151',   // gray-700
+          dark: '#000000',    // pure black accent
         },
-        'dark-bg': '#0F172A',
-        'secondary-bg': '#111827',
-        'card-bg': '#1F2937',
-        'dark-border': '#374151',
-        accent: '#3B82F6',
+        'dark-bg': '#FFFFFF',      // primary background: pure white
+        'secondary-bg': '#F8F9FA', // secondary background: off-white
+        'card-bg': '#FFFFFF',      // cards: pure white
+        'dark-border': '#E5E7EB',  // borders: light gray
+        accent: '#000000',         // accent: black
       },
       fontFamily: {
         sans: ['Poppins', 'system-ui', 'sans-serif'],

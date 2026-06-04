@@ -137,9 +137,9 @@ export default function Owners() {
 
   const getPartnerBadge = (percentage) => {
     const pct = Number(percentage) || 0;
-    if (pct >= 40) return { text: `${pct}% Founder`, color: 'bg-primary/20 text-primary-light border-primary/30' };
-    if (pct > 0) return { text: `${pct}% Co-Owner`, color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' };
-    return { text: 'Partner', color: 'bg-slate-800 text-gray-400 border-slate-700' };
+    if (pct >= 40) return { text: `${pct}% Founder`, color: 'bg-black text-white border-black font-semibold shadow-sm' };
+    if (pct > 0) return { text: `${pct}% Co-Owner`, color: 'bg-gray-200 text-gray-800 border-gray-300 font-semibold' };
+    return { text: 'Partner', color: 'bg-gray-100 text-gray-600 border-gray-255' };
   };
 
   const filteredOwners = owners.filter(o => 
@@ -151,11 +151,11 @@ export default function Owners() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
-            <ShieldCheck className="text-primary-light" />
+          <h1 className="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2">
+            <ShieldCheck className="text-black" />
             Owners & Partners
           </h1>
-          <p className="text-gray-400 text-sm mt-1">View business ownership structure, shares, and profiles</p>
+          <p className="text-gray-500 text-sm mt-1">View business ownership structure, shares, and profiles</p>
         </div>
         {isSuperAdmin && (
           <button onClick={() => openModal()} className="btn-primary flex items-center gap-2">
@@ -165,14 +165,14 @@ export default function Owners() {
         )}
       </div>
 
-      <div className="flex items-center gap-3 bg-slate-900 border border-dark-border px-4 py-2.5 rounded-lg max-w-md">
-        <Search size={18} className="text-gray-500" />
+      <div className="flex items-center gap-3 bg-white border border-dark-border px-4 py-2.5 rounded-lg max-w-md focus-within:border-black focus-within:ring-1 focus-within:ring-black/25 transition-all shadow-sm">
+        <Search size={18} className="text-gray-400" />
         <input 
           type="text" 
           placeholder="Search owners by name or email..." 
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
-          className="bg-transparent text-white placeholder-gray-500 text-sm outline-none w-full"
+          className="bg-transparent text-gray-900 placeholder-gray-400 text-sm outline-none w-full"
         />
       </div>
 
@@ -188,7 +188,7 @@ export default function Owners() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
-                className="card-modern relative overflow-hidden group flex flex-col justify-between"
+                className="card-modern bg-white relative overflow-hidden group flex flex-col justify-between"
               >
                 <div>
                   <div className="flex justify-between items-start mb-4">
@@ -196,14 +196,14 @@ export default function Owners() {
                       {badge.text}
                     </span>
                     {!owner.isActive && (
-                      <span className="bg-red-500/20 text-red-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-red-500/30 uppercase tracking-wider">
+                      <span className="bg-gray-100 text-gray-500 text-[10px] font-bold px-2 py-0.5 rounded-full border border-gray-200 uppercase tracking-wider">
                         Inactive
                       </span>
                     )}
                   </div>
 
                   <div className="flex items-center gap-4 mt-2">
-                    <div className="w-16 h-16 rounded-full bg-slate-800 border border-dark-border flex items-center justify-center text-2xl font-bold text-white overflow-hidden shadow-inner shrink-0">
+                    <div className="w-16 h-16 rounded-full bg-gray-100 border border-dark-border flex items-center justify-center text-2xl font-bold text-gray-900 overflow-hidden shadow-sm shrink-0">
                       {owner.profileImage ? (
                         <img src={owner.profileImage} alt={owner.name} className="w-full h-full object-cover" />
                       ) : (
@@ -211,37 +211,37 @@ export default function Owners() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <h3 className={`font-bold text-xl truncate ${!owner.isActive ? 'text-gray-500' : 'text-white'}`}>
+                      <h3 className={`font-bold text-xl truncate ${!owner.isActive ? 'text-gray-400' : 'text-gray-900'}`}>
                         {owner.name}
                       </h3>
-                      <p className="text-xs text-primary-light font-medium uppercase tracking-wider mt-0.5">Owner / Partner</p>
+                      <p className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-0.5">Owner / Partner</p>
                     </div>
                   </div>
 
                   {owner.bio && (
-                    <p className="text-gray-400 text-sm mt-4 line-clamp-2 italic">
+                    <p className="text-gray-500 text-sm mt-4 line-clamp-2 italic">
                       "{owner.bio}"
                     </p>
                   )}
 
-                  <div className="mt-4 pt-4 border-t border-dark-border/60 space-y-2 text-sm text-gray-400">
+                  <div className="mt-4 pt-4 border-t border-dark-border space-y-2 text-sm text-gray-600">
                     <div className="flex items-center gap-2">
-                      <Mail size={14} className="text-gray-500" />
+                      <Mail size={14} className="text-gray-400" />
                       <span className="truncate">{owner.email}</span>
                     </div>
                     {(owner.phone || owner.mobile) && (
                       <div className="flex items-center gap-2">
-                        <Phone size={14} className="text-gray-500" />
+                        <Phone size={14} className="text-gray-400" />
                         <span>{owner.phone || owner.mobile}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-dark-border/60 flex items-center gap-2">
+                <div className="mt-6 pt-4 border-t border-dark-border flex items-center gap-2">
                   <Link 
                     to={`/owners/${owner._id}`} 
-                    className="btn-outline flex-1 py-2 text-xs flex justify-center items-center gap-1.5 font-semibold text-primary-light hover:text-white"
+                    className="btn-outline flex-1 py-2 text-xs flex justify-center items-center gap-1.5 font-bold text-black hover:bg-gray-100"
                   >
                     <Eye size={14} /> Quick View
                   </Link>
@@ -249,14 +249,14 @@ export default function Owners() {
                     <div className="flex gap-2">
                       <button 
                         onClick={() => openModal(owner)} 
-                        className="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 border border-dark-border text-gray-400 hover:text-white transition-colors"
+                        className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-dark-border text-gray-500 hover:text-black transition-colors"
                         title="Edit Owner"
                       >
                         <Pencil size={14} />
                       </button>
                       <button 
                         onClick={() => handleDelete(owner._id)} 
-                        className="p-2 rounded-lg bg-slate-800 hover:bg-red-500/10 border border-dark-border text-gray-400 hover:text-red-400 transition-colors"
+                        className="p-2 rounded-lg bg-gray-50 hover:bg-gray-100 border border-dark-border text-gray-500 hover:text-black transition-colors"
                         title="Delete Owner"
                       >
                         <Trash2 size={14} />
@@ -278,12 +278,12 @@ export default function Owners() {
         >
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Image Uploader */}
-            <div className="flex flex-col items-center gap-3 p-4 bg-slate-900 rounded-lg border border-dark-border">
-              <div className="relative w-20 h-20 rounded-full bg-slate-800 border-2 border-primary/30 flex items-center justify-center text-3xl font-bold text-white overflow-hidden shadow-md">
+            <div className="flex flex-col items-center gap-3 p-4 bg-gray-50 rounded-lg border border-dark-border">
+              <div className="relative w-20 h-20 rounded-full bg-gray-100 border-2 border-black flex items-center justify-center text-3xl font-bold text-gray-900 overflow-hidden shadow-sm">
                 {form.profileImage ? (
                   <img src={form.profileImage} alt="Preview" className="w-full h-full object-cover" />
                 ) : (
-                  <User size={36} className="text-gray-500" />
+                  <User size={36} className="text-gray-400" />
                 )}
                 <label className="absolute inset-0 bg-black/60 opacity-0 hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-1 cursor-pointer text-[10px] text-white">
                   <Upload size={16} />
@@ -296,7 +296,7 @@ export default function Owners() {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Full Name *</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Full Name *</label>
                 <input 
                   type="text" 
                   value={form.name} 
@@ -306,7 +306,7 @@ export default function Owners() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Email *</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Email *</label>
                 <input 
                   type="email" 
                   value={form.email} 
@@ -316,7 +316,7 @@ export default function Owners() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Mobile / Phone</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Mobile / Phone</label>
                 <input 
                   type="tel" 
                   value={form.phone} 
@@ -325,7 +325,7 @@ export default function Owners() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">
                   {editingOwner ? 'New Password (optional)' : 'Password *'}
                 </label>
                 <input 
@@ -338,7 +338,7 @@ export default function Owners() {
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Ownership Share (%)</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Ownership Share (%)</label>
                 <div className="relative">
                   <input 
                     type="number" 
@@ -349,11 +349,11 @@ export default function Owners() {
                     max={100}
                     required
                   />
-                  <Percent size={14} className="absolute right-3 top-3.5 text-gray-500" />
+                  <Percent size={14} className="absolute right-3 top-3.5 text-gray-400" />
                 </div>
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Join Date</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Join Date</label>
                 <div className="relative">
                   <input 
                     type="date" 
@@ -365,7 +365,7 @@ export default function Owners() {
                 </div>
               </div>
               <div className="col-span-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Address</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Address</label>
                 <input 
                   type="text" 
                   value={form.address} 
@@ -374,7 +374,7 @@ export default function Owners() {
                 />
               </div>
               <div className="col-span-2">
-                <label className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1 block">Bio / Notes</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Bio / Notes</label>
                 <textarea 
                   value={form.bio} 
                   onChange={e => setForm({...form, bio: e.target.value})} 
@@ -385,12 +385,12 @@ export default function Owners() {
             </div>
 
             <div className="flex items-center gap-3 pt-2">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2 cursor-pointer">
+              <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 cursor-pointer">
                 <input 
                   type="checkbox" 
                   checked={form.isActive} 
                   onChange={e => setForm({...form, isActive: e.target.checked})}
-                  className="rounded border-gray-600 bg-slate-800 text-primary focus:ring-primary focus:ring-offset-slate-900" 
+                  className="rounded border-gray-300 bg-white text-black focus:ring-black focus:ring-offset-white" 
                 />
                 Active Owner Account
               </label>

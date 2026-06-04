@@ -124,7 +124,7 @@ export default function BookingForm({ module, initial, defaultDate, onSuccess, o
         {module !== 'cricket' && module !== 'shooting' && module !== 'marriage' && module !== 'banquet' && (
           <div>
             <label className="text-[11px] font-semibold text-gray-400 mb-1.5 block uppercase tracking-wider">Time Slot *</label>
-            <select name="timeSlot" value={form.timeSlot} onChange={handleChange} className="input-modern bg-slate-900" required>
+            <select name="timeSlot" value={form.timeSlot} onChange={handleChange} className="input-modern bg-white" required>
               <option value="">Select slot</option>
               {config.slots?.map((s) => (
                 <option key={s.id} value={s.id}>{s.label}</option>
@@ -153,7 +153,7 @@ export default function BookingForm({ module, initial, defaultDate, onSuccess, o
         {(module === 'marriage' || module === 'banquet') && (
           <div>
             <label className="text-[11px] font-semibold text-gray-400 mb-1.5 block uppercase tracking-wider">Booking Option *</label>
-            <select name="bookingType" value={form.bookingType} onChange={handleChange} className="input-modern bg-slate-900" required>
+            <select name="bookingType" value={form.bookingType} onChange={handleChange} className="input-modern bg-white" required>
               <option value="">Select option</option>
               <option value="full-day">Full Day</option>
               <option value="morning">Morning Half Day</option>
@@ -194,9 +194,9 @@ export default function BookingForm({ module, initial, defaultDate, onSuccess, o
           </div>
         </div>
         
-        <div className="sm:col-span-2 bg-slate-900/50 rounded-xl p-4 border border-dark-border flex justify-between items-center">
+        <div className="sm:col-span-2 bg-gray-50 rounded-xl p-4 border border-dark-border flex justify-between items-center">
           <span className="text-sm font-medium text-gray-400">Remaining Balance</span>
-          <span className="text-xl font-bold text-white">₹{remaining.toLocaleString('en-IN')}</span>
+          <span className="text-xl font-bold text-gray-900">₹{remaining.toLocaleString('en-IN')}</span>
         </div>
         
         <div className="sm:col-span-2">
