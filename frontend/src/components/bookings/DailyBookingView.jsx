@@ -6,14 +6,24 @@ import BookingCard from './BookingCard';
 import BookingForm from './BookingForm';
 import Modal from '../ui/Modal';
 import LoadingSpinner from '../ui/LoadingSpinner';
-import { Plus, CalendarX2 } from 'lucide-react';
+import { Plus, CalendarX2, FileText, Download, Printer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../../context/AuthContext';
+import { useBranding } from '../../context/BrandingContext';
+import { downloadInvoicePDF, generateInvoicePDF } from '../../utils/invoiceGenerator';
 
 export default function DailyBookingView({ module, date, onRefreshCalendar }) {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const { isSuperAdmin, isOwner, isStaff } = useAuth();
+  const { branding } = useBranding();
+
+  const canViewInvoice = isSuperAdmin || isOwner || isStaff;
+  const canDownloadPrint = isSuperAdmin || isOwner;
 
   const fetchBookings = async () => {
     if (!date) return;
@@ -165,6 +175,151 @@ export default function DailyBookingView({ module, date, onRefreshCalendar }) {
                     <p className="text-gray-700">{selected.eventNotes}</p>
                   </div>
                 )}
+              </div>
+            )}
+            
+            {canViewInvoice && (
+              <div className="flex gap-3 pt-4 border-t border-gray-100">
+                <button
+                  onClick={() => {
+                    setModal('invoice');
+                  }}
+                  className="flex-1 btn-secondary flex items-center justify-center gap-2"
+                >
+                  <FileText size={16} /> View Invoice
+                </button>
+                {canDownloadPrint && (
+                  <button
+                    onClick={async () => {
+                      setIsGenerating(true);
+                      try {
+                        await downloadInvoicePDF(selected, branding);
+                        toast.success('Invoice downloaded');
+                      } catch (err) {
+                        toast.error('Failed to generate PDF');
+                      } finally {
+                        setIsGenerating(false);
+                      }
+                    }}
+                    disabled={isGenerating}
+                    className="flex-1 btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <Download size={16} /> Download
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      <Modal isOpen={modal === 'invoice'} onClose={() => setModal('view')} title="Invoice Preview" size="lg">
+        {selected && (
+          <div className="space-y-6">
+            <div className="bg-white border border-gray-200 p-8 rounded-xl min-h-[400px] flex flex-col">
+              {/* Invoice Header */}
+              <div className="flex justify-between items-start border-b border-gray-100 pb-6 mb-6">
+                <div>
+                  {branding.logoDataUrl ? (
+                    <img src={branding.logoDataUrl} alt="Logo" className="h-12 object-contain mb-2" />
+                  ) : (
+                    <h2 className="text-2xl font-bold text-gray-900">{branding.companyName}</h2>
+                  )}
+                  <p className="text-sm text-gray-500">{selected.module === 'cricket-ground' ? 'Cricket Ground' : selected.module === 'shooting-studio' ? 'Shooting Studio' : selected.module === 'marriage-ground' ? 'Marriage Ground' : selected.module === 'banquet-hall' ? 'Banquet Hall' : selected.module}</p>
+                </div>
+                <div className="text-right">
+                  <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase">INVOICE</h1>
+                  <p className="text-sm font-medium text-gray-500 mt-1">INV-{format(new Date(selected.createdAt || selected.date), 'yyyyMMdd')}-{selected._id.substring(selected._id.length - 4).toUpperCase()}</p>
+                </div>
+              </div>
+
+              {/* Customer & Booking Details */}
+              <div className="grid grid-cols-2 gap-8 mb-8 text-sm">
+                <div>
+                  <h3 className="font-semibold text-gray-400 uppercase tracking-wider text-xs mb-2">Billed To</h3>
+                  <p className="font-medium text-gray-900">{selected.customerName}</p>
+                  <p className="text-gray-600">{selected.mobile}</p>
+                </div>
+                <div className="text-right">
+                  <h3 className="font-semibold text-gray-400 uppercase tracking-wider text-xs mb-2">Booking Details</h3>
+                  <p className="text-gray-600"><span className="font-medium text-gray-900">Event Date:</span> {format(new Date(selected.date), 'dd MMM yyyy')}</p>
+                  <p className="text-gray-600"><span className="font-medium text-gray-900">Time Slot:</span> {selected.timeSlot}</p>
+                </div>
+              </div>
+
+              {/* Amount Details */}
+              <div className="border border-gray-200 rounded-lg overflow-hidden mb-6">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                    <tr>
+                      <th className="px-4 py-3">Description</th>
+                      <th className="px-4 py-3 text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    <tr>
+                      <td className="px-4 py-3 font-medium text-gray-900">Venue Booking - {selected.timeSlot}</td>
+                      <td className="px-4 py-3 text-right">₹{selected.totalAmount?.toLocaleString('en-IN') || 0}</td>
+                    </tr>
+                    {(selected.advanceAmount || 0) > 0 && (
+                      <tr>
+                        <td className="px-4 py-3 text-gray-500">Advance Paid</td>
+                        <td className="px-4 py-3 text-right text-gray-500">- ₹{selected.advanceAmount?.toLocaleString('en-IN')}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                  <tfoot className="bg-gray-50">
+                    <tr>
+                      <td className="px-4 py-3 font-bold text-gray-900 text-right">Total Due</td>
+                      <td className="px-4 py-3 font-bold text-gray-900 text-right text-lg">₹{((selected.totalAmount || 0) - (selected.advanceAmount || 0)).toLocaleString('en-IN')}</td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+              
+              {/* Footer Note */}
+              <div className="mt-auto pt-6 text-center text-xs text-gray-400">
+                <p>Thank you for choosing {branding.companyName}</p>
+              </div>
+            </div>
+
+            {canDownloadPrint && (
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={async () => {
+                    setIsGenerating(true);
+                    try {
+                      const doc = generateInvoicePDF(selected, branding);
+                      doc.autoPrint();
+                      window.open(doc.output('bloburl'), '_blank');
+                    } catch (err) {
+                      toast.error('Failed to print');
+                    } finally {
+                      setIsGenerating(false);
+                    }
+                  }}
+                  disabled={isGenerating}
+                  className="btn-secondary flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Printer size={16} /> Print
+                </button>
+                <button
+                  onClick={async () => {
+                    setIsGenerating(true);
+                    try {
+                      await downloadInvoice(selected, branding);
+                      toast.success('Invoice downloaded');
+                    } catch (err) {
+                      toast.error('Failed to download');
+                    } finally {
+                      setIsGenerating(false);
+                    }
+                  }}
+                  disabled={isGenerating}
+                  className="btn-primary flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Download size={16} /> Download PDF
+                </button>
               </div>
             )}
           </div>
