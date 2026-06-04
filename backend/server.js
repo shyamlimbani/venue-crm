@@ -26,37 +26,24 @@ const PORT = Number(process.env.PORT) || env.PORT || 5000;
 const HOST = process.env.HOST || '0.0.0.0';
 
 // ─── 1. CORS first (before any routes / JSON parser) ─────────────────────────
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://127.0.0.1:5173'
-];
-
-if (process.env.CORS_ORIGIN) {
-  const customOrigins = process.env.CORS_ORIGIN.split(',').map(o => o.trim());
-  customOrigins.forEach(o => {
-    if (o && !allowedOrigins.includes(o)) allowedOrigins.push(o);
-  });
-} else {
-  allowedOrigins.push('https://venue-crm-ten.vercel.app');
-}
-
 app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, curl, postman)
-    if (!origin) return callback(null, true);
-    
-    const isAllowed = allowedOrigins.includes(origin) || /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.warn(`[CORS] Blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: [
+    'http://localhost:5173',
+    'https://venue-crm-ten.vercel.app'
+  ],
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
-  optionsSuccessStatus: 200
+  methods: [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+  ],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization'
+  ]
 }));
 
 // ─── 2. Body parsers (JSON + form for login/API) ─────────────────────────────
