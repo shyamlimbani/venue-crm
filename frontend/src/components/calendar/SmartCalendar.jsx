@@ -118,42 +118,6 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
     return `${formattedDate}\nVenue: ${venueLabel}\nBookings: ${count}\nCustomers: ${customerNames}`;
   };
 
-  const renderIndicator = (count, isFullCell) => {
-    if (!count || count <= 0) return null;
-
-    if (isFullCell) {
-      // Fully booked: light red badge
-      return (
-        <span 
-          className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-red-100 text-red-800 border border-red-200 shrink-0 shadow-sm"
-          title="Fully Booked"
-        >
-          {count}
-        </span>
-      );
-    }
-
-    // Booked Date: Green dot (1 booking)
-    if (count === 1) {
-      return (
-        <span 
-          className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 shadow-sm animate-pulse" 
-          title="1 Booking"
-        />
-      );
-    }
-
-    // Multiple Bookings: Green badge
-    return (
-      <span 
-        className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 shrink-0 shadow-sm"
-        title={`${count} Bookings`}
-      >
-        {count}
-      </span>
-    );
-  };
-
   const getTimeSlotLabel = (b) => {
     if (b.module === 'cricket') return 'Full Day';
     if (b.module === 'shooting') return `${b.startTime?.replace(/\s*(AM|PM)/i, '')}-${b.endTime?.replace(/\s*(AM|PM)/i, '')}`;
@@ -167,12 +131,13 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
     const isTodayDate = dateStr === format(new Date(), 'yyyy-MM-dd');
     const tooltip = getTooltipText(dateStr, info);
 
-    const baseBg = isTodayDate ? 'bg-neutral-100/90' : 'bg-white';
-    const borderStyle = isSelected 
-      ? 'ring-2 ring-black z-20 shadow-sm' 
+    const baseBg = isSelected 
+      ? 'bg-neutral-50' 
       : isTodayDate 
-        ? 'ring-2 ring-black ring-inset z-10' 
-        : 'hover:bg-neutral-50/70';
+        ? 'bg-neutral-100/90' 
+        : 'bg-white';
+        
+    const borderStyle = 'hover:bg-neutral-50/70';
 
     return (
       <button
@@ -184,27 +149,16 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
           min-h-[44px] sm:min-h-[64px] md:min-h-[72px] lg:min-h-[80px]
           ${baseBg} ${borderStyle}`}
       >
-        {/* Cell Header: Left indicator (mobile only) / Right date number */}
-        <div className="w-full flex items-center justify-between leading-none p-0.5">
-          {/* Mobile indicator */}
-          <div className="md:hidden flex items-center gap-0.5 pl-0.5">
+        {/* Cell Header: Date number & Booking Indicator Dot */}
+        <div className="w-full flex items-center justify-end leading-none p-0.5">
+          <div className={`text-[10px] sm:text-xs font-semibold ${
+            isTodayDate || isSelected ? 'text-black font-extrabold' : 'text-gray-500'
+          } flex items-start gap-1 ml-auto pr-0.5 pt-0.5`}>
+            <span>{dayNum}</span>
             {info?.count > 0 && (
-              <>
-                <span className={`w-1.5 h-1.5 rounded-full ${st === 'full' ? 'bg-red-500' : 'bg-green-500'}`} />
-                {info?.count > 1 && (
-                  <span className="text-[8px] font-bold text-gray-500 leading-none">
-                    {info.count}
-                  </span>
-                )}
-              </>
+              <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E] shrink-0 mt-0.5" title="Booked" />
             )}
           </div>
-
-          <span className={`text-[10px] sm:text-xs font-semibold ${
-            isTodayDate || isSelected ? 'text-black font-extrabold' : 'text-gray-500'
-          } ml-auto pr-0.5 pt-0.5`}>
-            {dayNum}
-          </span>
         </div>
 
         {/* Desktop View: Full-width compact booking cards inside cell */}
@@ -244,9 +198,9 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
   };
 
   return (
-    <div className="card-modern relative">
-      {/* Sticky wrapper for header and day labels */}
-      <div className="sticky top-0 bg-white z-20 pt-2 pb-2 border-b border-gray-100 mb-4">
+    <div className="card-modern relative flex flex-col h-[calc(100vh-280px)] min-h-[480px] overflow-hidden p-4 md:p-5">
+      {/* Header, Legend, and Weekday headers fixed on top */}
+      <div className="shrink-0 bg-white border-b border-gray-100 mb-4 pb-2">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
           <div>
             <h3 className="text-gray-900 font-bold text-lg md:text-xl tracking-tight">
@@ -315,9 +269,6 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
           <span className="flex items-center gap-2 text-gray-500">
             <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Booked
           </span>
-          <span className="flex items-center gap-2 text-gray-500">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Fully Booked
-          </span>
         </div>
 
         {/* Week Day Labels */}
@@ -331,8 +282,8 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
         </div>
       </div>
 
-      {/* Grid container with overflow protection */}
-      <div className="overflow-x-auto overscroll-x-contain scrollbar-thin">
+      {/* Grid container with overflow protection - Scrolls internally */}
+      <div className="flex-1 overflow-y-auto overflow-x-auto overscroll-contain scrollbar-thin pr-0.5">
         <div className="min-w-[280px]">
           {loading ? (
             <LoadingSpinner className="py-12" />
