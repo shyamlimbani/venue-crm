@@ -1,5 +1,6 @@
 import Booking from '../models/Booking.js';
 import Notification from '../models/Notification.js';
+import Expense from '../models/Expense.js';
 import { MODULES, MODULE_LABELS } from '../config/modules.js';
 
 const todayRange = () => {
@@ -84,6 +85,16 @@ export const getDashboardStats = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(5);
 
+    const todayExpenses = await Expense.aggregate([
+      { $match: { date: { $gte: todayStart, $lte: todayEnd } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+
+    const monthExpenses = await Expense.aggregate([
+      { $match: { date: { $gte: monthStart, $lte: monthEnd } } },
+      { $group: { _id: null, total: { $sum: '$amount' } } },
+    ]);
+
     res.json({
       success: true,
       data: {
@@ -96,6 +107,10 @@ export const getDashboardStats = async (req, res) => {
         recentActivity,
         moduleStats,
         notifications,
+        expenses: {
+          today: todayExpenses[0]?.total || 0,
+          month: monthExpenses[0]?.total || 0
+        }
       },
     });
   } catch (error) {

@@ -6,7 +6,7 @@ import { MODULES, formatCurrency, formatDate } from '../utils/constants';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { motion } from 'framer-motion';
-import { Calendar, IndianRupee, Clock, Users, ArrowRight } from 'lucide-react';
+import { Calendar, IndianRupee, Clock, Users, ArrowRight, Receipt } from 'lucide-react';
 
 export default function Dashboard() {
   const { isStaff, user } = useAuth();
@@ -130,6 +130,28 @@ export default function Dashboard() {
                 </Link>
               );
             })}
+
+            {!isStaff && (
+              <Link
+                to="/expenses"
+                className="flex-1 p-4 rounded-xl border border-dark-border bg-white group hover:border-black transition-colors flex items-center justify-between hover:shadow-sm"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-white border border-dark-border rounded-xl flex items-center justify-center text-black group-hover:text-gray-500 transition-colors shrink-0">
+                    <Receipt size={28} className="stroke-[1.75]" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-gray-900 group-hover:text-black transition-colors">
+                      Expenses
+                    </h3>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      Today: {formatCurrency(stats.expenses?.today)} · Month: {formatCurrency(stats.expenses?.month)}
+                    </p>
+                  </div>
+                </div>
+                <ArrowRight size={18} className="text-gray-400 group-hover:text-black transition-colors" />
+              </Link>
+            )}
           </div>
         </motion.div>
       </div>
