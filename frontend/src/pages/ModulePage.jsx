@@ -4,10 +4,10 @@ import { MODULES } from '../utils/constants';
 import SmartCalendar from '../components/calendar/SmartCalendar';
 import DailyBookingView from '../components/bookings/DailyBookingView';
 import { motion } from 'framer-motion';
-import { Building2, Camera, Trees } from 'lucide-react';
+import { Building2, Camera, Trees, Trophy } from 'lucide-react';
 
 const ICONS_MAP = {
-  cricket: Building2,
+  cricket: Trophy,
   shooting: Camera,
   marriage: Trees,
   banquet: Building2
@@ -33,7 +33,7 @@ export default function ModulePage() {
         className="card-modern bg-white border-dark-border"
       >
         <div className="flex items-center gap-5">
-          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-gray-50 border border-gray-200 text-black">
+          <div className="flex items-center justify-center w-16 h-16 rounded-xl bg-white border border-dark-border text-black shrink-0 shadow-sm">
             <IconComponent size={32} className="stroke-[1.75]" />
           </div>
           <div>

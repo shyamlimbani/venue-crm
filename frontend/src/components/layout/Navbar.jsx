@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { Search, Bell, Menu } from 'lucide-react';
+import { useBranding } from '../../context/BrandingContext';
 
 const titles = {
   '/': 'Dashboard',
@@ -11,10 +12,11 @@ const titles = {
 
 export default function Navbar({ onMenuClick }) {
   const location = useLocation();
+  const { branding } = useBranding();
   const moduleMatch = location.pathname.match(/\/module\/(\w+)/);
-  const title = moduleMatch
+  const pageTitle = moduleMatch
     ? { cricket: 'Cricket Ground', shooting: 'Shooting Studio', marriage: 'Marriage Ground', banquet: 'Banquet Hall' }[moduleMatch[1]]
-    : titles[location.pathname] || 'Venue CRM';
+    : titles[location.pathname];
 
   return (
     <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-dark-border">
@@ -26,7 +28,23 @@ export default function Navbar({ onMenuClick }) {
           >
             <Menu size={24} />
           </button>
-          <h1 className="text-xl font-semibold text-gray-900 tracking-tight">{title}</h1>
+          
+          <div className="flex items-center gap-2">
+            {branding?.logo ? (
+              <>
+                <img src={branding.logo} alt="Logo" className="h-9 w-9 object-contain shrink-0" />
+                {pageTitle && (
+                  <h1 className="text-xl font-semibold text-gray-900 tracking-tight border-l border-gray-200 pl-3 ml-1">
+                    {pageTitle}
+                  </h1>
+                )}
+              </>
+            ) : (
+              <h1 className="text-xl font-semibold text-gray-900 tracking-tight">
+                {pageTitle || 'Venue CRM'}
+              </h1>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-4 sm:gap-6">

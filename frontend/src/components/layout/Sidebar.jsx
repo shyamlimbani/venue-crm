@@ -1,24 +1,27 @@
 import { NavLink } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
+import { useBranding } from '../../context/BrandingContext';
 import { 
   LayoutDashboard, Users, IndianRupee, FileBarChart2, 
-  Bell, Building2, Camera, Trees,
-  X, UserCog, LogOut, UserRoundCog
+  Bell, Building2, Camera, Trees, Trophy,
+  X, UserCog, LogOut, UserRoundCog, Receipt, Settings
 } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/customers', label: 'Customers', icon: Users },
   { to: '/payments', label: 'Payments', icon: IndianRupee },
+  { to: '/expenses', label: 'Expenses', icon: Receipt },
   { to: '/reports', label: 'Reports', icon: FileBarChart2 },
   { to: '/notifications', label: 'Notifications', icon: Bell },
   { to: '/owners', label: 'Owners', icon: UserCog },
   { to: '/users', label: 'Staff', icon: UserRoundCog },
+  { to: '/settings/branding', label: 'Settings', icon: Settings },
 ];
 
 const modules = [
-  { id: 'cricket', to: '/module/cricket', label: 'Cricket Ground', icon: Building2 },
+  { id: 'cricket', to: '/module/cricket', label: 'Cricket Ground', icon: Trophy },
   { id: 'shooting', to: '/module/shooting', label: 'Shooting Studio', icon: Camera },
   { id: 'marriage', to: '/module/marriage', label: 'Marriage Ground', icon: Trees },
   { id: 'banquet', to: '/module/banquet', label: 'Banquet Hall', icon: Building2 },
@@ -26,6 +29,7 @@ const modules = [
 
 export default function Sidebar({ isOpen, onClose }) {
   const { user, logout, isSuperAdmin, isOwner, isStaff } = useAuth();
+  const { branding } = useBranding();
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm font-medium border ${
@@ -35,20 +39,29 @@ export default function Sidebar({ isOpen, onClose }) {
     }`;
 
   const sidebarContent = (
-    <>
-      <div className="p-6 border-b border-dark-border bg-white">
+    <div className="flex flex-col h-full w-full bg-white">
+      <div className="p-6 border-b border-dark-border bg-white shrink-0">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-xl font-bold text-gray-900 tracking-tight">Venue CRM</h1>
-            <p className="text-[10px] text-gray-500 mt-1 font-semibold tracking-wider uppercase">Enterprise Edition</p>
+          <div className="flex items-center gap-3 min-w-0">
+            {branding?.logo ? (
+              <img src={branding.logo} alt="Company Logo" className="h-11 w-11 object-contain shrink-0" />
+            ) : (
+              <>
+                <div className="h-10 w-10 bg-black rounded-lg flex items-center justify-center text-white font-bold shrink-0 text-xs">V</div>
+                <div className="min-w-0">
+                  <h1 className="text-sm font-bold text-gray-900 tracking-tight truncate">{branding?.companyName || 'Venue CRM'}</h1>
+                  <p className="text-[9px] text-gray-400 font-semibold tracking-wider uppercase truncate">{branding?.tagline || 'Enterprise Edition'}</p>
+                </div>
+              </>
+            )}
           </div>
-          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-black transition-colors">
+          <button onClick={onClose} className="lg:hidden p-1.5 rounded-lg hover:bg-gray-100 text-gray-500 hover:text-black transition-colors shrink-0">
             <X size={20} />
           </button>
         </div>
       </div>
 
-      <nav className="p-4 space-y-1 overflow-y-auto h-[calc(100%-160px)] bg-white">
+      <nav className="p-4 space-y-1 overflow-y-auto flex-1 bg-white">
         {!isStaff && (
           <>
             <p className="px-3 py-2 text-[10px] font-bold uppercase tracking-wider text-gray-400">Overview</p>
@@ -78,7 +91,7 @@ export default function Sidebar({ isOpen, onClose }) {
         })}
       </nav>
 
-      <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-dark-border bg-gray-50">
+      <div className="p-4 border-t border-dark-border bg-gray-50 mt-auto shrink-0">
         <div className="flex items-center gap-3 mb-4">
           <div className="w-9 h-9 rounded-full bg-black flex items-center justify-center text-white font-bold border border-black shadow-sm">
             {user?.name?.[0] || 'A'}
@@ -93,7 +106,7 @@ export default function Sidebar({ isOpen, onClose }) {
           Sign Out
         </button>
       </div>
-    </>
+    </div>
   );
 
   return (
@@ -110,7 +123,7 @@ export default function Sidebar({ isOpen, onClose }) {
         )}
       </AnimatePresence>
 
-      <aside className={`fixed top-0 left-0 z-50 h-full w-72 bg-white border-r border-dark-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside className={`fixed top-0 left-0 z-50 h-screen w-72 bg-white border-r border-dark-border transform transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:z-auto lg:h-screen flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         {sidebarContent}
       </aside>
     </>

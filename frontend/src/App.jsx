@@ -10,6 +10,9 @@ import UsersPage from './pages/Users';
 import Owners from './pages/Owners';
 import OwnerDetails from './pages/OwnerDetails';
 import Login from './pages/Login';
+import Expenses from './pages/Expenses';
+import ExpenseReports from './pages/ExpenseReports';
+import BrandingSettings from './pages/BrandingSettings';
 import ProtectedRoute from './components/ProtectedRoute';
 
 export default function App() {
@@ -30,6 +33,9 @@ export default function App() {
         <Route path="users" element={<ProtectedRoute allowedRoles={['admin']}><UsersPage /></ProtectedRoute>} />
         <Route path="owners" element={<ProtectedRoute allowedRoles={['admin', 'owner']}><Owners /></ProtectedRoute>} />
         <Route path="owners/:id" element={<ProtectedRoute allowedRoles={['admin', 'owner']}><OwnerDetails /></ProtectedRoute>} />
+        <Route path="expenses" element={<ProtectedRoute allowedRoles={['admin', 'owner']}><Expenses /></ProtectedRoute>} />
+        <Route path="expenses/reports" element={<ProtectedRoute allowedRoles={['admin', 'owner']}><ExpenseReports /></ProtectedRoute>} />
+        <Route path="settings/branding" element={<ProtectedRoute allowedRoles={['admin', 'owner', 'staff']}><BrandingSettings /></ProtectedRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" />} />
     </Routes>

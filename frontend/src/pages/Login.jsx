@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useBranding } from '../context/BrandingContext';
 import { Mail, Lock, Loader2, LayoutDashboard } from 'lucide-react';
 
 export default function Login() {
@@ -7,6 +8,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { login } = useAuth();
+  const { branding } = useBranding();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,11 +22,19 @@ export default function Login() {
       <div className="w-full max-w-md bg-white rounded-2xl shadow-xl border border-dark-border p-8">
         
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 border border-gray-200 mb-4">
-            <LayoutDashboard size={32} className="text-black" />
+          <div className="inline-flex items-center justify-center">
+            {branding?.logo ? (
+              <img src={branding.logo} alt="Company Logo" className="h-24 object-contain max-w-[240px] mx-auto" />
+            ) : (
+              <div className="flex flex-col items-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 border border-gray-200 mb-4">
+                  <LayoutDashboard size={32} className="text-black" />
+                </div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">{branding?.companyName || 'Venue CRM'}</h1>
+                <p className="text-gray-500 text-sm">{branding?.tagline || 'Sign in to manage your venues'}</p>
+              </div>
+            )}
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Venue CRM</h1>
-          <p className="text-gray-500">Sign in to manage your venues</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">

@@ -5,16 +5,16 @@ import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, Mail, Phone, MapPin, Calendar, Percent, 
-  BookOpen, Clock, ShieldCheck, User, Tent, Camera, 
-  CalendarDays, PartyPopper, CheckCircle, HelpCircle, XCircle 
+  BookOpen, Clock, ShieldCheck, User, Trophy, Camera, 
+  Trees, Building2, CheckCircle, HelpCircle, XCircle 
 } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 
 const MODULES_MAP = {
-  cricket: { label: 'Cricket Ground', icon: Tent, color: 'text-gray-900 bg-gray-100 border-gray-200' },
+  cricket: { label: 'Cricket Ground', icon: Trophy, color: 'text-gray-900 bg-gray-100 border-gray-200' },
   shooting: { label: 'Shooting Studio', icon: Camera, color: 'text-gray-900 bg-gray-100 border-gray-200' },
-  marriage: { label: 'Marriage Ground', icon: CalendarDays, color: 'text-gray-900 bg-gray-100 border-gray-200' },
-  banquet: { label: 'Banquet Hall', icon: PartyPopper, color: 'text-gray-900 bg-gray-100 border-gray-200' },
+  marriage: { label: 'Marriage Ground', icon: Trees, color: 'text-gray-900 bg-gray-100 border-gray-200' },
+  banquet: { label: 'Banquet Hall', icon: Building2, color: 'text-gray-900 bg-gray-100 border-gray-200' },
 };
 
 const PAYMENT_STATUS_COLORS = {
@@ -203,7 +203,7 @@ export default function OwnerDetails() {
                   <tbody className="divide-y divide-dark-border">
                     {activity?.recentBookings?.map((booking) => {
                       const mod = MODULES_MAP[booking.module];
-                      const ModIcon = mod?.icon || Tent;
+                      const ModIcon = mod?.icon || Building2;
                       return (
                         <tr key={booking._id} className="text-gray-700 hover:bg-gray-50 transition-colors group">
                           <td className="py-3.5 pr-3 font-semibold text-gray-950 truncate max-w-[140px]">

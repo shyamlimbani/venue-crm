@@ -18,6 +18,8 @@ import calendarRoutes from './routes/calendarRoutes.js';
 import notificationRoutes from './routes/notificationRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import expenseRoutes from './routes/expenseRoutes.js';
+import brandingRoutes from './routes/brandingRoutes.js';
 import { restrictTo } from './middleware/auth.js';
 
 const app = express();
@@ -77,6 +79,8 @@ app.use('/api/calendar', calendarRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/branding', brandingRoutes);
 
 // ─── 5. Errors last ──────────────────────────────────────────────────────────
 app.use(notFound);

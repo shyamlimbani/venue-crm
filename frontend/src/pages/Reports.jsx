@@ -123,7 +123,11 @@ export default function Reports() {
                 <div key={m.module}>
                   <div className="flex justify-between text-sm mb-2">
                     <div className="flex items-center gap-2">
-                      <span>{mod?.icon}</span>
+                      {mod?.icon && (
+                        <div className="w-8 h-8 bg-white border border-dark-border rounded-lg flex items-center justify-center text-black shrink-0">
+                          <mod.icon size={16} className="stroke-[1.75]" />
+                        </div>
+                      )}
                       <span className="font-semibold text-gray-900">{m.label}</span>
                     </div>
                     <span className="font-bold text-gray-900">{formatCurrency(m.revenue)}</span>

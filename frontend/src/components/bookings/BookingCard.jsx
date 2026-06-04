@@ -22,12 +22,12 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
       animate={{ opacity: 1, y: 0 }}
       className="card-modern hover:border-black/50 transition-colors group"
     >
-      <div className="flex justify-between items-start gap-4 mb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="font-bold text-gray-900 text-lg">{booking.customerName}</h3>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-3 sm:gap-4 mb-4">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-1.5 sm:gap-2">
+            <h3 className="font-bold text-gray-900 text-base sm:text-lg leading-tight break-words">{booking.customerName}</h3>
             {booking.bookingOwnerName && (
-              <span className="flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200">
+              <span className="inline-flex items-center gap-1 text-[10px] bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full border border-gray-200 w-fit shrink-0">
                 <ShieldCheck size={10} />
                 {booking.bookingOwnerName}
               </span>
@@ -38,12 +38,12 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
             {booking.mobile}
           </a>
         </div>
-        <span className={`text-xs px-2.5 py-1 rounded-full font-medium border ${PAYMENT_COLORS[booking.paymentStatus]}`}>
+        <span className={`text-xs px-2.5 py-1 rounded-full font-medium border w-fit ${PAYMENT_COLORS[booking.paymentStatus]}`}>
           {booking.paymentStatus}
         </span>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 text-sm mb-5 p-3 rounded-xl bg-gray-50 border border-dark-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-5 p-3 rounded-xl bg-gray-50 border border-dark-border">
         <div>
           <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
             <Calendar size={12} /> Date & Schedule
@@ -71,7 +71,7 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
           </p>
         </div>
 
-        <div className="col-span-2 border-t border-dark-border pt-3 mt-1">
+        <div className="col-span-1 sm:col-span-2 border-t border-dark-border pt-3 mt-1">
           <div className="flex justify-between items-center">
             <div>
               <span className="text-xs text-gray-500 block mb-0.5">Advance Paid</span>
@@ -86,25 +86,25 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
       </div>
 
       <div className="flex flex-wrap gap-2">
-        <button onClick={() => onView(booking)} className="btn-outline text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5">
+        <button onClick={() => onView(booking)} className="btn-outline text-xs flex-1 min-w-[80px] sm:min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5">
           <Eye size={14} /> View
         </button>
         {canEdit ? (
           <>
-            <button onClick={() => onEdit(booking)} className="btn-outline text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5">
+            <button onClick={() => onEdit(booking)} className="btn-outline text-xs flex-1 min-w-[80px] sm:min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5">
               <Edit2 size={14} /> Edit
             </button>
-            <button onClick={() => onCancel(booking)} className="text-xs flex-1 min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:border-gray-300 hover:text-black transition-colors">
+            <button onClick={() => onCancel(booking)} className="text-xs flex-1 min-w-[80px] sm:min-w-[70px] min-h-[36px] flex justify-center items-center gap-1.5 px-3 py-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-100 hover:border-gray-300 hover:text-black transition-colors">
               <Trash2 size={14} /> Cancel
             </button>
             {booking.paymentStatus !== 'Paid' && (
-              <button onClick={() => onMarkPaid(booking)} className="btn-primary text-xs flex-[2] min-w-[100px] min-h-[36px] flex justify-center items-center gap-1.5">
+              <button onClick={() => onMarkPaid(booking)} className="btn-primary text-xs w-full sm:w-auto sm:flex-[2] min-h-[36px] flex justify-center items-center gap-1.5">
                 <CheckCircle2 size={14} /> Mark Paid
               </button>
             )}
           </>
         ) : (
-          <div className="flex-[3] text-center text-xs text-gray-500 flex items-center justify-center p-2 bg-gray-50 rounded-lg border border-gray-200">
+          <div className="w-full text-center text-xs text-gray-500 flex items-center justify-center p-2 bg-gray-50 rounded-lg border border-gray-200">
             Only {booking.bookingOwnerName || 'owner'} can modify this
           </div>
         )}

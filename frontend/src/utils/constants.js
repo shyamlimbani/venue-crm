@@ -1,8 +1,10 @@
+import { Trophy, Camera, Trees, Building2 } from 'lucide-react';
+
 export const MODULES = {
-  cricket: { id: 'cricket', label: 'Cricket Ground', icon: '🏢', color: 'bg-gray-50 border-gray-200' },
-  shooting: { id: 'shooting', label: 'Shooting Studio', icon: '📷', color: 'bg-gray-50 border-gray-200' },
-  marriage: { id: 'marriage', label: 'Marriage Ground', icon: '🌲', color: 'bg-gray-50 border-gray-200' },
-  banquet: { id: 'banquet', label: 'Banquet Hall', icon: '🏢', color: 'bg-gray-50 border-gray-200' },
+  cricket: { id: 'cricket', label: 'Cricket Ground', icon: Trophy, color: 'bg-gray-50 border-gray-200' },
+  shooting: { id: 'shooting', label: 'Shooting Studio', icon: Camera, color: 'bg-gray-50 border-gray-200' },
+  marriage: { id: 'marriage', label: 'Marriage Ground', icon: Trees, color: 'bg-gray-50 border-gray-200' },
+  banquet: { id: 'banquet', label: 'Banquet Hall', icon: Building2, color: 'bg-gray-50 border-gray-200' },
 };
 
 export const MODULE_LIST = Object.values(MODULES);

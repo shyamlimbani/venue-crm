@@ -114,7 +114,11 @@ export default function Dashboard() {
                   className="flex-1 p-4 rounded-xl border border-dark-border bg-white group hover:border-black transition-colors flex items-center justify-between hover:shadow-sm"
                 >
                   <div className="flex items-center gap-4">
-                    <span className="text-3xl bg-gray-150 p-2 rounded-lg border border-gray-200">{mod?.icon}</span>
+                    {mod?.icon && (
+                      <div className="w-14 h-14 bg-white border border-dark-border rounded-xl flex items-center justify-center text-black group-hover:text-gray-500 transition-colors shrink-0">
+                        <mod.icon size={28} className="stroke-[1.75]" />
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-bold text-gray-900 group-hover:text-black transition-colors">
                         {m.label}

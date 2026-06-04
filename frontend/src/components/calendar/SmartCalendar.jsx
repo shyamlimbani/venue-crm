@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react';
-import { format, addMonths, subMonths, startOfMonth, getDaysInMonth, getDay } from 'date-fns';
+import {
+  format,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  getDaysInMonth,
+  getDay,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  addWeeks,
+  subWeeks
+} from 'date-fns';
 import api from '../../api/axios';
 import LoadingSpinner from '../ui/LoadingSpinner';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
@@ -12,6 +24,7 @@ const statusClass = {
 
 export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
   const [current, setCurrent] = useState(new Date());
+  const [view, setView] = useState('month'); // 'month' or 'week'
   const [days, setDays] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -19,127 +32,307 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
   const month = current.getMonth() + 1;
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchCalendarData = async () => {
       setLoading(true);
       try {
-        const { data } = await api.get(`/api/calendar/${module}`, { params: { year, month } });
-        setDays(data.data.days || []);
+        if (view === 'month') {
+          const { data } = await api.get(`/api/calendar/${module}`, {
+            params: { year, month }
+          });
+          setDays(data.data.days || []);
+        } else {
+          // Week view: check if it spans two months
+          const startW = startOfWeek(current);
+          const endW = endOfWeek(current);
+          const startYear = startW.getFullYear();
+          const startMonth = startW.getMonth() + 1;
+          const endYear = endW.getFullYear();
+          const endMonth = endW.getMonth() + 1;
+
+          if (startYear !== endYear || startMonth !== endMonth) {
+            const [res1, res2] = await Promise.all([
+              api.get(`/api/calendar/${module}`, { params: { year: startYear, month: startMonth } }),
+              api.get(`/api/calendar/${module}`, { params: { year: endYear, month: endMonth } })
+            ]);
+            const days1 = res1.data.data.days || [];
+            const days2 = res2.data.data.days || [];
+            setDays([...days1, ...days2]);
+          } else {
+            const { data } = await api.get(`/api/calendar/${module}`, {
+              params: { year: startYear, month: startMonth }
+            });
+            setDays(data.data.days || []);
+          }
+        }
       } catch {
         setDays([]);
       } finally {
         setLoading(false);
       }
     };
-    fetch();
-  }, [module, year, month]);
+    fetchCalendarData();
+  }, [module, current, view]);
+
+  const handlePrev = () => {
+    if (view === 'month') {
+      setCurrent(subMonths(current, 1));
+    } else {
+      setCurrent(subWeeks(current, 1));
+    }
+  };
+
+  const handleNext = () => {
+    if (view === 'month') {
+      setCurrent(addMonths(current, 1));
+    } else {
+      setCurrent(addWeeks(current, 1));
+    }
+  };
+
+  const handleToday = () => {
+    const today = new Date();
+    setCurrent(today);
+    onDateSelect(format(today, 'yyyy-MM-dd'));
+  };
 
   const firstDay = getDay(startOfMonth(current));
   const blanks = Array(firstDay).fill(null);
-  const dayMap = Object.fromEntries(days.map((d) => [d.day, d]));
+  const dayMap = Object.fromEntries(days.map((d) => [d.date, d]));
+
+  const daysInWeek = eachDayOfInterval({
+    start: startOfWeek(current),
+    end: endOfWeek(current),
+  });
+
+  const renderCell = (dayNum, dateStr, info, isSelected, st) => {
+    return (
+      <button
+        key={dateStr}
+        onClick={() => onDateSelect(dateStr)}
+        className={`rounded-xl border text-sm font-medium transition-all
+          flex flex-col items-center justify-start p-1 sm:py-2 gap-0.5 min-h-[48px] sm:min-h-[80px] md:min-h-[100px] lg:min-h-[120px] w-full
+          ${statusClass[st]} ${
+            isSelected
+              ? 'ring-2 ring-black ring-offset-2 scale-105 z-10 font-semibold shadow-sm'
+              : 'hover:scale-[1.03] hover:bg-gray-50'
+          }`}
+      >
+        <div className="flex items-center justify-center gap-1">
+          <span className={isSelected ? 'text-black font-bold' : 'text-gray-800'}>{dayNum}</span>
+          {info?.count > 0 && (
+            <span className={`text-[9px] font-semibold px-1 py-0.5 rounded-md ${isSelected ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
+              {info.count}
+            </span>
+          )}
+        </div>
+
+        {/* Desktop View: detailed booking list */}
+        {info?.bookings?.length > 0 && (
+          <div className="hidden md:flex flex-col gap-1 mt-1.5 w-full px-1 overflow-hidden">
+            {info.bookings.slice(0, 3).map((b) => {
+              const firstOwnerName = b.bookingOwnerName?.split(' ')[0] || 'Owner';
+              if (module === 'cricket') {
+                return (
+                  <span
+                    key={b._id}
+                    className="text-[9px] bg-black text-white border border-black truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm"
+                    title={`Booked by ${b.bookingOwnerName}`}
+                  >
+                    🔒 {firstOwnerName}
+                  </span>
+                );
+              }
+              if (module === 'shooting') {
+                return (
+                  <span
+                    key={b._id}
+                    className="text-[9px] bg-gray-100 text-gray-800 border border-gray-300 truncate px-1 py-0.5 rounded-md font-medium text-center w-full block shadow-sm"
+                    title={`${b.startTime} - ${b.endTime} (${b.peopleCount} People) by ${b.bookingOwnerName}`}
+                  >
+                    {b.startTime?.replace(/\s*(AM|PM)/i, '')}-{b.endTime?.replace(/\s*(AM|PM)/i, '')}
+                  </span>
+                );
+              }
+              if (module === 'marriage' || module === 'banquet') {
+                const typeLabel = b.bookingType === 'full-day' ? 'Full' : b.bookingType === 'morning' ? 'Morning' : 'Evening';
+                const typeColor = b.bookingType === 'full-day'
+                  ? 'bg-black text-white border-black'
+                  : b.bookingType === 'morning'
+                    ? 'bg-gray-100 text-gray-700 border-gray-200'
+                    : 'bg-gray-200 text-gray-800 border-gray-300';
+                return (
+                  <span
+                    key={b._id}
+                    className={`text-[9px] ${typeColor} truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm`}
+                    title={`${b.bookingType} by ${b.bookingOwnerName}`}
+                  >
+                    {typeLabel}
+                  </span>
+                );
+              }
+              return (
+                <span
+                  key={b._id}
+                  className="text-[9px] bg-gray-50 text-gray-600 border border-dark-border truncate px-1 py-0.5 rounded-md font-medium text-center w-full block shadow-sm"
+                  title={b.timeSlot}
+                >
+                  {b.timeSlot}
+                </span>
+              );
+            })}
+            {info.bookings.length > 3 && (
+              <span className="text-[9px] text-gray-500 font-semibold mt-0.5 block text-center">
+                +{info.bookings.length - 3} more
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Mobile View: minimal dot indicators to avoid overflow */}
+        {info?.bookings?.length > 0 && (
+          <div className="flex md:hidden items-center justify-center gap-0.5 mt-1.5 flex-wrap px-0.5">
+            {info.bookings.slice(0, 3).map((b, idx) => (
+              <span
+                key={b._id || idx}
+                className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-black' : 'bg-gray-600'}`}
+              />
+            ))}
+            {info.bookings.length > 3 && (
+              <span className={`text-[8px] font-bold leading-none ${isSelected ? 'text-black' : 'text-gray-600'}`}>
+                +
+              </span>
+            )}
+          </div>
+        )}
+      </button>
+    );
+  };
 
   return (
-    <div className="card-modern">
-      <div className="flex items-center justify-between mb-6">
-        <h3 className="text-gray-900 font-semibold text-lg">{format(current, 'MMMM yyyy')}</h3>
-        <div className="flex items-center gap-2">
-          <button onClick={() => setCurrent(subMonths(current, 1))} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-black transition-colors border border-dark-border">
-            <ChevronLeft size={18} />
-          </button>
-          <button onClick={() => setCurrent(addMonths(current, 1))} className="p-2 hover:bg-gray-100 rounded-lg text-gray-500 hover:text-black transition-colors border border-dark-border">
-            <ChevronRight size={18} />
-          </button>
-        </div>
-      </div>
+    <div className="card-modern relative">
+      {/* Sticky wrapper for header and day labels */}
+      <div className="sticky top-0 bg-white z-20 pt-2 pb-2 border-b border-gray-100 mb-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-4">
+          <div>
+            <h3 className="text-gray-900 font-bold text-lg md:text-xl tracking-tight">
+              {view === 'month'
+                ? format(current, 'MMMM yyyy')
+                : `Week of ${format(startOfWeek(current), 'd MMM')} - ${format(endOfWeek(current), 'd MMM yyyy')}`}
+            </h3>
+          </div>
 
-      <div className="flex gap-4 mb-6 text-xs font-medium">
-        <span className="flex items-center gap-2 text-gray-500"><span className="w-3 h-3 rounded-full bg-white border border-gray-300" /> Available</span>
-        <span className="flex items-center gap-2 text-gray-500"><span className="w-3 h-3 rounded-full bg-gray-200 border border-gray-300" /> Partial</span>
-        <span className="flex items-center gap-2 text-gray-500"><span className="w-3 h-3 rounded-full bg-black border border-black" /> Full</span>
-      </div>
-
-      <div className="grid grid-cols-7 gap-2 text-center text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-          <div key={d} className="py-2">{d}</div>
-        ))}
-      </div>
-
-      {loading ? (
-        <LoadingSpinner className="py-12" />
-      ) : (
-        <div className="grid grid-cols-7 gap-2">
-          {blanks.map((_, i) => (
-            <div key={`b-${i}`} className="aspect-square" />
-          ))}
-          {Array.from({ length: getDaysInMonth(current) }, (_, i) => {
-            const day = i + 1;
-            const info = dayMap[day];
-            const dateStr = info?.date || `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-            const isSelected = selectedDate === dateStr;
-            const st = info?.status || 'available';
-
-            return (
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Nav controls */}
+            <div className="flex items-center gap-1 bg-white border border-dark-border rounded-lg p-0.5 shadow-sm">
               <button
-                key={day}
-                onClick={() => onDateSelect(dateStr)}
-                className={`aspect-square rounded-xl border text-sm font-medium transition-all
-                  flex flex-col items-center justify-start py-2 gap-0.5 min-h-[64px]
-                  ${statusClass[st]} ${isSelected ? 'ring-2 ring-black bg-black/5 border-black shadow-sm scale-105 z-10' : 'hover:scale-105 hover:bg-gray-150'}`}
+                onClick={handlePrev}
+                className="p-1.5 hover:bg-gray-100 rounded text-gray-600 hover:text-black transition-colors"
+                title="Previous"
               >
-                <div className="flex items-center gap-1">
-                  <span className={isSelected ? 'text-black font-bold' : 'text-gray-800'}>{day}</span>
-                  {info?.count > 0 && (
-                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-md ${isSelected ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'}`}>
-                      {info.count}
-                    </span>
-                  )}
-                </div>
-                {info?.bookings?.length > 0 && (
-                  <div className="flex flex-col gap-0.5 mt-1 w-full px-1 overflow-hidden">
-                    {info.bookings.slice(0, 2).map((b) => {
-                      const firstOwnerName = b.bookingOwnerName?.split(' ')[0] || 'Owner';
-                      if (module === 'cricket') {
-                        return (
-                          <span key={b._id} className="text-[8px] bg-black text-white border border-black truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm" title={`Booked by ${b.bookingOwnerName}`}>
-                            🔒 {firstOwnerName}
-                          </span>
-                        );
-                      }
-                      if (module === 'shooting') {
-                        return (
-                          <span key={b._id} className="text-[8px] bg-gray-100 text-gray-800 border border-gray-300 truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm" title={`${b.startTime} - ${b.endTime} (${b.peopleCount} People) by ${b.bookingOwnerName}`}>
-                            {b.startTime?.replace(/\s*(AM|PM)/i, '')}-{b.endTime?.replace(/\s*(AM|PM)/i, '')} ({b.peopleCount}p)
-                          </span>
-                        );
-                      }
-                      if (module === 'marriage' || module === 'banquet') {
-                        const typeLabel = b.bookingType === 'full-day' ? 'Full' : b.bookingType === 'morning' ? 'Morning' : 'Evening';
-                        const typeColor = b.bookingType === 'full-day' 
-                          ? 'bg-black text-white border-black' 
-                          : b.bookingType === 'morning' 
-                            ? 'bg-gray-100 text-gray-700 border-gray-200' 
-                            : 'bg-gray-200 text-gray-800 border-gray-300';
-                        return (
-                          <span key={b._id} className={`text-[8px] ${typeColor} truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm`} title={`${b.bookingType} by ${b.bookingOwnerName}`}>
-                            {typeLabel} ({firstOwnerName})
-                          </span>
-                        );
-                      }
-                      return (
-                        <span key={b._id} className="text-[8px] bg-gray-50 text-gray-600 border border-dark-border truncate px-1 py-0.5 rounded-md font-semibold text-center w-full block shadow-sm" title={b.timeSlot}>
-                          {b.timeSlot} ({firstOwnerName})
-                        </span>
-                      );
-                    })}
-                    {info.bookings.length > 2 && (
-                      <span className="text-[8px] text-gray-500 leading-none">+{info.bookings.length - 2}</span>
-                    )}
-                  </div>
-                )}
+                <ChevronLeft size={16} />
               </button>
-            );
-          })}
+              <button
+                onClick={handleToday}
+                className="px-2.5 py-1 text-xs font-semibold hover:bg-gray-100 rounded text-gray-600 hover:text-black transition-colors"
+              >
+                Today
+              </button>
+              <button
+                onClick={handleNext}
+                className="p-1.5 hover:bg-gray-100 rounded text-gray-600 hover:text-black transition-colors"
+                title="Next"
+              >
+                <ChevronRight size={16} />
+              </button>
+            </div>
+
+            {/* View toggles */}
+            <div className="flex items-center bg-gray-100 border border-dark-border rounded-lg p-0.5 shadow-inner">
+              <button
+                onClick={() => setView('month')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  view === 'month'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-gray-600 hover:text-black'
+                }`}
+              >
+                Month
+              </button>
+              <button
+                onClick={() => setView('week')}
+                className={`px-3 py-1 text-xs font-semibold rounded-md transition-all ${
+                  view === 'week'
+                    ? 'bg-white text-black shadow-sm'
+                    : 'text-gray-600 hover:text-black'
+                }`}
+              >
+                Week
+              </button>
+            </div>
+          </div>
         </div>
-      )}
+
+        {/* Legend */}
+        <div className="flex gap-4 mb-2 text-xs font-medium">
+          <span className="flex items-center gap-2 text-gray-500">
+            <span className="w-3 h-3 rounded-full bg-white border border-gray-300" /> Available
+          </span>
+          <span className="flex items-center gap-2 text-gray-500">
+            <span className="w-3 h-3 rounded-full bg-gray-100 border border-gray-300" /> Partial
+          </span>
+          <span className="flex items-center gap-2 text-gray-500">
+            <span className="w-3 h-3 rounded-full bg-black border border-black" /> Full
+          </span>
+        </div>
+
+        {/* Week Day Labels */}
+        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+          {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
+            <div key={d} className="py-2">
+              <span className="hidden sm:inline">{d}</span>
+              <span className="inline sm:hidden">{d[0]}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Grid container with overflow protection */}
+      <div className="overflow-x-auto overscroll-x-contain scrollbar-thin">
+        <div className="min-w-[280px]">
+          {loading ? (
+            <LoadingSpinner className="py-12" />
+          ) : (
+            <div className="grid grid-cols-7 gap-1 sm:gap-2 pb-2">
+              {view === 'month' ? (
+                <>
+                  {blanks.map((_, i) => (
+                    <div key={`b-${i}`} className="w-full" />
+                  ))}
+                  {Array.from({ length: getDaysInMonth(current) }, (_, i) => {
+                    const day = i + 1;
+                    const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                    const info = dayMap[dateStr];
+                    const isSelected = selectedDate === dateStr;
+                    const st = info?.status || 'available';
+
+                    return renderCell(day, dateStr, info, isSelected, st);
+                  })}
+                </>
+              ) : (
+                daysInWeek.map((dayDate) => {
+                  const dateStr = format(dayDate, 'yyyy-MM-dd');
+                  const info = dayMap[dateStr];
+                  const isSelected = selectedDate === dateStr;
+                  const st = info?.status || 'available';
+                  const dayNum = dayDate.getDate();
+
+                  return renderCell(dayNum, dateStr, info, isSelected, st);
+                })
+              )}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }
