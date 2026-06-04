@@ -14,7 +14,7 @@ import {
 } from 'date-fns';
 import api from '../../api/axios';
 import LoadingSpinner from '../ui/LoadingSpinner';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Clock } from 'lucide-react';
 import { MODULES } from '../../utils/constants';
 
 const statusClass = {
@@ -137,13 +137,13 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
     if (count === 1) {
       return (
         <span 
-          className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 shadow-sm" 
+          className="w-1.5 h-1.5 rounded-full bg-green-500 shrink-0 shadow-sm animate-pulse" 
           title="1 Booking"
         />
       );
     }
 
-    // Multiple Bookings: Green badge (2-5 bookings)
+    // Multiple Bookings: Green badge
     return (
       <span 
         className="text-[8px] font-extrabold px-1.5 py-0.5 rounded-full bg-green-100 text-green-800 border border-green-200 shrink-0 shadow-sm"
@@ -154,67 +154,87 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
     );
   };
 
+  const getTimeSlotLabel = (b) => {
+    if (b.module === 'cricket') return 'Full Day';
+    if (b.module === 'shooting') return `${b.startTime?.replace(/\s*(AM|PM)/i, '')}-${b.endTime?.replace(/\s*(AM|PM)/i, '')}`;
+    if (b.module === 'marriage' || b.module === 'banquet') {
+      return b.bookingType === 'full-day' ? 'Full' : b.bookingType === 'morning' ? 'Morning' : 'Evening';
+    }
+    return b.timeSlot || 'Booked';
+  };
+
   const renderCell = (dayNum, dateStr, info, isSelected, st) => {
     const isTodayDate = dateStr === format(new Date(), 'yyyy-MM-dd');
     const tooltip = getTooltipText(dateStr, info);
+
+    const baseBg = isTodayDate ? 'bg-neutral-100/90' : 'bg-white';
+    const borderStyle = isSelected 
+      ? 'ring-2 ring-black z-20 shadow-sm' 
+      : isTodayDate 
+        ? 'ring-2 ring-black ring-inset z-10' 
+        : 'hover:bg-neutral-50/70';
 
     return (
       <button
         key={dateStr}
         onClick={() => onDateSelect(dateStr)}
         title={tooltip}
-        className={`rounded-xl border text-sm font-medium transition-all duration-200
-          flex flex-col items-center justify-start p-1 sm:py-2 gap-0.5 min-h-[48px] sm:min-h-[80px] md:min-h-[100px] lg:min-h-[120px] w-full
-          ${statusClass[st]} ${
-            isTodayDate ? 'ring-1 ring-black ring-offset-1 font-bold z-10' : ''
-          } ${
-            isSelected
-              ? 'ring-2 ring-black ring-offset-2 scale-105 z-20 font-semibold shadow-sm'
-              : 'hover:scale-[1.03] hover:bg-gray-50'
-          }`}
+        className={`border-r border-b border-gray-200 text-sm font-medium transition-all duration-150
+          flex flex-col items-center justify-start p-1 gap-1 w-full relative
+          min-h-[44px] sm:min-h-[64px] md:min-h-[72px] lg:min-h-[80px]
+          ${baseBg} ${borderStyle}`}
       >
-        <div className="flex items-center justify-center gap-1.5">
-          <span className={isSelected ? 'text-black font-bold' : 'text-gray-800 font-semibold'}>
-            {dayNum}
-          </span>
-          {renderIndicator(info?.count, st === 'full')}
-        </div>
-
-        {/* Desktop View: detailed booking list */}
-        {info?.bookings?.length > 0 && (
-          <div className="hidden md:flex flex-col gap-1 mt-1.5 w-full px-1 overflow-hidden">
-            {info.bookings.slice(0, 3).map((b) => {
-              const firstOwnerName = b.bookingOwnerName?.split(' ')[0] || 'Owner';
-              const venueLabel = MODULES[b.module]?.label || b.module;
-              return (
-                <span
-                  key={b._id}
-                  className="text-[8px] bg-gray-50 text-gray-700 border border-gray-250 truncate px-1.5 py-0.5 rounded-full font-semibold text-left w-full block shadow-sm"
-                >
-                  {firstOwnerName} · {b.customerName} · {venueLabel}
-                </span>
-              );
-            })}
-            {info.bookings.length > 3 && (
-              <span className="text-[8px] text-gray-500 font-semibold mt-0.5 block text-center">
-                +{info.bookings.length - 3} more
-              </span>
+        {/* Cell Header: Left indicator (mobile only) / Right date number */}
+        <div className="w-full flex items-center justify-between leading-none p-0.5">
+          {/* Mobile indicator */}
+          <div className="md:hidden flex items-center gap-0.5 pl-0.5">
+            {info?.count > 0 && (
+              <>
+                <span className={`w-1.5 h-1.5 rounded-full ${st === 'full' ? 'bg-red-500' : 'bg-green-500'}`} />
+                {info?.count > 1 && (
+                  <span className="text-[8px] font-bold text-gray-500 leading-none">
+                    {info.count}
+                  </span>
+                )}
+              </>
             )}
           </div>
-        )}
 
-        {/* Mobile View: minimal dot indicators to avoid overflow */}
+          <span className={`text-[10px] sm:text-xs font-semibold ${
+            isTodayDate || isSelected ? 'text-black font-extrabold' : 'text-gray-500'
+          } ml-auto pr-0.5 pt-0.5`}>
+            {dayNum}
+          </span>
+        </div>
+
+        {/* Desktop View: Full-width compact booking cards inside cell */}
         {info?.bookings?.length > 0 && (
-          <div className="flex md:hidden items-center justify-center gap-0.5 mt-1.5 flex-wrap px-0.5">
-            {info.bookings.slice(0, 3).map((b, idx) => (
-              <span
-                key={b._id || idx}
-                className={`w-1.5 h-1.5 rounded-full ${st === 'full' ? 'bg-red-500' : 'bg-green-500'}`}
-              />
-            ))}
-            {info.bookings.length > 3 && (
-              <span className={`text-[8px] font-bold leading-none ${st === 'full' ? 'text-red-700' : 'text-green-700'}`}>
-                +
+          <div className="hidden md:flex flex-col gap-1 w-full overflow-hidden mt-0.5">
+            {info.bookings.slice(0, 2).map((b) => {
+              const venueLabel = MODULES[b.module]?.label || b.module;
+              const VenueIcon = MODULES[b.module]?.icon;
+              
+              return (
+                <div
+                  key={b._id}
+                  className="w-full bg-black text-white rounded-md p-1 flex flex-col items-start gap-0.5 text-left shadow-sm select-none border border-black hover:bg-neutral-900 transition-colors"
+                >
+                  {/* Time slot with Clock emoji */}
+                  <div className="flex items-center gap-1 text-[8.5px] sm:text-[9.5px] text-gray-300 font-medium tracking-tight truncate w-full">
+                    <span className="shrink-0">🕒</span>
+                    <span className="truncate">{getTimeSlotLabel(b)}</span>
+                  </div>
+                  {/* Venue icon + customer name */}
+                  <div className="flex items-center gap-1 w-full font-bold text-[9px] sm:text-[10px] text-white tracking-tight truncate">
+                    {VenueIcon && <VenueIcon size={9} className="stroke-[2.5] text-white shrink-0" />}
+                    <span className="truncate">{b.customerName}</span>
+                  </div>
+                </div>
+              );
+            })}
+            {info.bookings.length > 2 && (
+              <span className="text-[8.5px] font-bold text-gray-500 block text-left pl-1 hover:text-black transition-colors">
+                +{info.bookings.length - 2} more
               </span>
             )}
           </div>
@@ -290,20 +310,20 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
         {/* Legend */}
         <div className="flex gap-4 mb-2 text-xs font-medium">
           <span className="flex items-center gap-2 text-gray-500">
-            <span className="w-3.5 h-3.5 rounded-sm bg-white border border-gray-300" /> Available
+            <span className="w-2.5 h-2.5 rounded-full bg-white border border-gray-300" /> Available
           </span>
           <span className="flex items-center gap-2 text-gray-500">
-            <span className="w-3.5 h-3.5 rounded-sm bg-white border border-gray-200 border-l-2 border-l-green-500" /> Booked
+            <span className="w-2.5 h-2.5 rounded-full bg-green-500" /> Booked
           </span>
           <span className="flex items-center gap-2 text-gray-500">
-            <span className="w-3.5 h-3.5 rounded-sm bg-white border border-gray-200 border-l-2 border-l-red-500" /> Fully Booked
+            <span className="w-2.5 h-2.5 rounded-full bg-red-500" /> Fully Booked
           </span>
         </div>
 
         {/* Week Day Labels */}
-        <div className="grid grid-cols-7 gap-1 sm:gap-2 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider">
+        <div className="grid grid-cols-7 gap-0 text-center text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
           {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((d) => (
-            <div key={d} className="py-2">
+            <div key={d} className="py-2 border-b border-gray-100">
               <span className="hidden sm:inline">{d}</span>
               <span className="inline sm:hidden">{d[0]}</span>
             </div>
@@ -317,11 +337,14 @@ export default function SmartCalendar({ module, onDateSelect, selectedDate }) {
           {loading ? (
             <LoadingSpinner className="py-12" />
           ) : (
-            <div className="grid grid-cols-7 gap-1 sm:gap-2 pb-2">
+            <div className="grid grid-cols-7 gap-0 border-t border-l border-gray-200 rounded-lg overflow-hidden bg-white shadow-sm mb-2">
               {view === 'month' ? (
                 <>
                   {blanks.map((_, i) => (
-                    <div key={`b-${i}`} className="w-full" />
+                    <div 
+                      key={`b-${i}`} 
+                      className="w-full border-r border-b border-gray-200 bg-gray-50/40 min-h-[44px] sm:min-h-[64px] md:min-h-[72px] lg:min-h-[80px]" 
+                    />
                   ))}
                   {Array.from({ length: getDaysInMonth(current) }, (_, i) => {
                     const day = i + 1;
