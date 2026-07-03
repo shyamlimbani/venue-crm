@@ -53,3 +53,71 @@ export const getOwnerPayments = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const updateOwnerPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, date, method, notes } = req.body;
+
+    const payment = await OwnerPayment.findById(id);
+    if (!payment) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
+
+    const numAmount = Number(amount);
+    if (isNaN(numAmount) || numAmount <= 0) {
+      return res.status(400).json({ success: false, message: 'Invalid payment amount' });
+    }
+
+    const amountDiff = numAmount - payment.amount;
+
+    payment.amount = numAmount;
+    payment.date = date || payment.date;
+    payment.method = method || payment.method;
+    payment.notes = notes !== undefined ? notes : payment.notes;
+
+    await payment.save();
+
+    // Update the owner's totalPaid
+    if (amountDiff !== 0) {
+      const owner = await User.findById(payment.owner);
+      if (owner) {
+        owner.totalPaid = (owner.totalPaid || 0) + amountDiff;
+        await owner.save();
+      }
+    }
+
+    const updatedPayment = await OwnerPayment.findById(id).populate('addedBy', 'name');
+
+    res.json({ success: true, data: updatedPayment, message: 'Payment updated successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const deleteOwnerPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const payment = await OwnerPayment.findById(id);
+    if (!payment) {
+      return res.status(404).json({ success: false, message: 'Payment not found' });
+    }
+
+    const amountToDeduct = payment.amount;
+    const ownerId = payment.owner;
+
+    await payment.deleteOne();
+
+    // Update the owner's totalPaid
+    const owner = await User.findById(ownerId);
+    if (owner) {
+      owner.totalPaid = Math.max(0, (owner.totalPaid || 0) - amountToDeduct);
+      await owner.save();
+    }
+
+    res.json({ success: true, message: 'Payment deleted successfully.' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};

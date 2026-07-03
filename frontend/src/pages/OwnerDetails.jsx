@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, Mail, Phone, MapPin, Calendar, Percent, 
   BookOpen, Clock, ShieldCheck, User, Trophy, Camera, 
-  Trees, Building2, CheckCircle, HelpCircle, XCircle, Plus, Wallet, FileText
+  Trees, Building2, CheckCircle, HelpCircle, XCircle, Plus, Wallet, FileText, Pencil, Trash2
 } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
 import Modal from '../components/ui/Modal';
@@ -39,6 +39,11 @@ export default function OwnerDetails() {
     method: 'Cash',
     notes: ''
   });
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [paymentToEdit, setPaymentToEdit] = useState(null);
+  
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [paymentToDelete, setPaymentToDelete] = useState(null);
 
   useEffect(() => {
     const fetchOwnerDetails = async () => {
@@ -99,6 +104,77 @@ export default function OwnerDetails() {
       });
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add payment');
+    }
+  };
+
+  const handleEditClick = (payment) => {
+    setPaymentToEdit(payment);
+    setPaymentForm({
+      date: new Date(payment.date).toISOString().split('T')[0],
+      amount: payment.amount,
+      method: payment.method,
+      notes: payment.notes || ''
+    });
+    setIsEditModalOpen(true);
+  };
+
+  const handleUpdatePayment = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.put(`/api/owner-payments/${paymentToEdit._id}`, paymentForm);
+      toast.success('Payment updated successfully.');
+      
+      const updatedPayment = res.data.data;
+      setPayments(payments.map(p => p._id === updatedPayment._id ? updatedPayment : p));
+      
+      const amountDiff = Number(paymentForm.amount) - paymentToEdit.amount;
+      if (amountDiff !== 0) {
+        setData(prev => ({
+          ...prev,
+          user: {
+            ...prev.user,
+            totalPaid: (prev.user.totalPaid || 0) + amountDiff
+          }
+        }));
+      }
+      
+      setIsEditModalOpen(false);
+      setPaymentToEdit(null);
+      setPaymentForm({
+        date: new Date().toISOString().split('T')[0],
+        amount: '',
+        method: 'Cash',
+        notes: ''
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update payment');
+    }
+  };
+
+  const handleDeleteClick = (payment) => {
+    setPaymentToDelete(payment);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      await api.delete(`/api/owner-payments/${paymentToDelete._id}`);
+      toast.success('Payment deleted successfully.');
+      
+      setPayments(payments.filter(p => p._id !== paymentToDelete._id));
+      
+      setData(prev => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          totalPaid: Math.max(0, (prev.user.totalPaid || 0) - paymentToDelete.amount)
+        }
+      }));
+      
+      setIsDeleteModalOpen(false);
+      setPaymentToDelete(null);
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete payment');
     }
   };
 
@@ -196,6 +272,7 @@ export default function OwnerDetails() {
                       <th className="pb-3">Method</th>
                       <th className="pb-3">Added By</th>
                       <th className="pb-3 text-right">Amount</th>
+                      {isSuperAdmin && <th className="pb-3 text-right">Actions</th>}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-dark-border">
@@ -215,6 +292,26 @@ export default function OwnerDetails() {
                         <td className="py-3.5 text-right font-bold text-gray-900">
                           ₹{payment.amount?.toLocaleString('en-IN')}
                         </td>
+                        {isSuperAdmin && (
+                          <td className="py-3.5 text-right">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleEditClick(payment)}
+                                className="p-1.5 text-gray-500 hover:text-black hover:bg-gray-200 rounded-md transition-colors"
+                                title="Edit"
+                              >
+                                <Pencil size={16} />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteClick(payment)}
+                                className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                title="Delete"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            </div>
+                          </td>
+                        )}
                       </tr>
                     ))}
                   </tbody>
@@ -281,6 +378,84 @@ export default function OwnerDetails() {
             <button type="submit" className="btn-primary flex-1">Save Payment</button>
           </div>
         </form>
+      </Modal>
+
+      <Modal 
+        isOpen={isEditModalOpen} 
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setPaymentToEdit(null);
+        }} 
+        title="Edit Payment"
+      >
+        <form onSubmit={handleUpdatePayment} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Payment Date *</label>
+              <input 
+                type="date" 
+                value={paymentForm.date} 
+                onChange={e => setPaymentForm({...paymentForm, date: e.target.value})} 
+                className="input-modern" 
+                required 
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Amount (₹) *</label>
+              <input 
+                type="number" 
+                value={paymentForm.amount} 
+                onChange={e => setPaymentForm({...paymentForm, amount: e.target.value})} 
+                className="input-modern" 
+                required 
+                min="1"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Payment Method *</label>
+              <select 
+                value={paymentForm.method} 
+                onChange={e => setPaymentForm({...paymentForm, method: e.target.value})} 
+                className="input-modern"
+              >
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cheque">Cheque</option>
+                <option value="Card">Card</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Notes (Optional)</label>
+              <textarea 
+                value={paymentForm.notes} 
+                onChange={e => setPaymentForm({...paymentForm, notes: e.target.value})} 
+                className="input-modern h-20 resize-none" 
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-4 border-t border-dark-border mt-6">
+            <button type="button" onClick={() => { setIsEditModalOpen(false); setPaymentToEdit(null); }} className="btn-outline flex-1">Cancel</button>
+            <button type="submit" className="btn-primary flex-1">Save Changes</button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal 
+        isOpen={isDeleteModalOpen} 
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setPaymentToDelete(null);
+        }} 
+        title="Delete Payment"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">Are you sure you want to delete this payment?</p>
+          <div className="flex gap-3 pt-4 border-t border-dark-border mt-6">
+            <button type="button" onClick={() => { setIsDeleteModalOpen(false); setPaymentToDelete(null); }} className="btn-outline flex-1">Cancel</button>
+            <button onClick={handleConfirmDelete} className="btn-primary bg-red-600 hover:bg-red-700 text-white flex-1 border-none shadow-sm">Delete</button>
+          </div>
+        </div>
       </Modal>
     </div>
   );
