@@ -229,7 +229,7 @@ export default function DailyBookingView({ module, date, onRefreshCalendar }) {
                 </div>
                 <div className="text-right">
                   <h1 className="text-2xl font-black text-gray-900 tracking-tight uppercase">INVOICE</h1>
-                  <p className="text-sm font-medium text-gray-500 mt-1">INV-{format(new Date(selected.createdAt || selected.date), 'yyyyMMdd')}-{selected._id.substring(selected._id.length - 4).toUpperCase()}</p>
+                  <p className="text-sm font-medium text-gray-500 mt-1">INV-{format(new Date(selected.createdAt || selected.fromDate), 'yyyyMMdd')}-{selected._id.substring(selected._id.length - 4).toUpperCase()}</p>
                 </div>
               </div>
 
@@ -242,7 +242,7 @@ export default function DailyBookingView({ module, date, onRefreshCalendar }) {
                 </div>
                 <div className="text-right">
                   <h3 className="font-semibold text-gray-400 uppercase tracking-wider text-xs mb-2">Booking Details</h3>
-                  <p className="text-gray-600"><span className="font-medium text-gray-900">Event Date:</span> {format(new Date(selected.date), 'dd MMM yyyy')}</p>
+                  <p className="text-gray-600"><span className="font-medium text-gray-900">Period:</span> {format(new Date(selected.fromDate), 'dd MMM yyyy')} {selected.fromDate !== selected.toDate && `→ ${format(new Date(selected.toDate), 'dd MMM yyyy')}`}</p>
                   <p className="text-gray-600"><span className="font-medium text-gray-900">Time Slot:</span> {selected.timeSlot}</p>
                 </div>
               </div>

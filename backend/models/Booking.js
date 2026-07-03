@@ -11,7 +11,8 @@ const bookingSchema = new mongoose.Schema(
       enum: Object.values(MODULES),
       required: true,
     },
-    date: { type: Date, required: true },
+    fromDate: { type: Date, required: true },
+    toDate: { type: Date, required: true },
     timeSlot: { type: String, required: true },
     bookingType: { type: String, default: '' },
     shootCategory: { type: String, default: '' },
@@ -42,8 +43,8 @@ const bookingSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-bookingSchema.index({ module: 1, date: 1, timeSlot: 1, status: 1 });
-bookingSchema.index({ date: 1, status: 1 });
+bookingSchema.index({ module: 1, fromDate: 1, toDate: 1, timeSlot: 1, status: 1 });
+bookingSchema.index({ fromDate: 1, toDate: 1, status: 1 });
 bookingSchema.index({ customer: 1 });
 
 export default mongoose.model('Booking', bookingSchema);

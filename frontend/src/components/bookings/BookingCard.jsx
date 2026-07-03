@@ -16,6 +16,13 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
     return type || 'Standard Booking';
   };
 
+  const getDuration = () => {
+    if (!booking.fromDate || !booking.toDate) return 1;
+    const diff = new Date(booking.toDate) - new Date(booking.fromDate);
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+    return days > 0 ? days : 1;
+  };
+
   return (
     <motion.div 
       initial={{ opacity: 0, y: 10 }}
@@ -46,11 +53,14 @@ export default function BookingCard({ booking, onView, onEdit, onCancel, onMarkP
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm mb-5 p-3 rounded-xl bg-gray-50 border border-dark-border">
         <div>
           <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-            <Calendar size={12} /> Date & Schedule
+            <Calendar size={12} /> Period & Schedule
           </span>
-          <p className="text-gray-900 font-medium">{formatDate(booking.date)}</p>
+          <p className="text-gray-900 font-medium">
+            {formatDate(booking.fromDate)} 
+            {booking.fromDate !== booking.toDate && ` → ${formatDate(booking.toDate)}`}
+          </p>
           <p className="text-gray-500 text-xs mt-0.5">
-            {booking.module === 'cricket' && 'Full Day Booking'}
+            {getDuration()} {getDuration() === 1 ? 'Day' : 'Days'} • {booking.module === 'cricket' && 'Full Day Booking'}
             {booking.module === 'shooting' && `${booking.startTime} - ${booking.endTime}`}
             {(booking.module === 'marriage' || booking.module === 'banquet') && getBookingTypeLabel(booking.bookingType)}
             {!['cricket', 'shooting', 'marriage', 'banquet'].includes(booking.module) && booking.timeSlot}

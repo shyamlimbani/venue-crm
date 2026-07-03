@@ -25,12 +25,14 @@ export const getDashboardStats = async (req, res) => {
     const { start: monthStart, end: monthEnd } = monthRange();
 
     const todayBookings = await Booking.find({
-      date: { $gte: todayStart, $lte: todayEnd },
+      fromDate: { $lte: todayEnd },
+      toDate: { $gte: todayStart },
       status: 'active',
     }).sort({ timeSlot: 1 });
 
     const monthBookings = await Booking.find({
-      date: { $gte: monthStart, $lte: monthEnd },
+      fromDate: { $lte: monthEnd },
+      toDate: { $gte: monthStart },
       status: 'active',
     });
 
@@ -41,10 +43,10 @@ export const getDashboardStats = async (req, res) => {
     ]);
 
     const upcomingEvents = await Booking.find({
-      date: { $gt: todayEnd },
+      fromDate: { $gt: todayEnd },
       status: 'active',
     })
-      .sort({ date: 1 })
+      .sort({ fromDate: 1 })
       .limit(10);
 
     const recentActivity = await Booking.find({ status: 'active' })
@@ -57,12 +59,14 @@ export const getDashboardStats = async (req, res) => {
         const today = await Booking.countDocuments({
           module,
           status: 'active',
-          date: { $gte: todayStart, $lte: todayEnd },
+          fromDate: { $lte: todayEnd },
+          toDate: { $gte: todayStart },
         });
         const todayList = await Booking.find({
           module,
           status: 'active',
-          date: { $gte: todayStart, $lte: todayEnd },
+          fromDate: { $lte: todayEnd },
+          toDate: { $gte: todayStart },
         }).select('timeSlot paymentStatus customerName');
 
         let todayStatus = 'No bookings today';

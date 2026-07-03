@@ -177,7 +177,10 @@ export default function Dashboard() {
                     <div className="w-2 h-2 rounded-full bg-black" />
                     <span className="font-semibold text-gray-800">{e.customerName}</span>
                   </div>
-                  <span className="text-gray-500 font-mono text-xs">{formatDate(e.date)}</span>
+                  <span className="text-gray-500 font-mono text-xs">
+                    {formatDate(e.fromDate)} 
+                    {e.fromDate !== e.toDate && ` → ${formatDate(e.toDate)}`}
+                  </span>
                 </div>
               ))}
             </div>

@@ -4,7 +4,7 @@ import { MODULES } from './constants';
 
 export const getInvoiceNumber = (booking) => {
   if (!booking) return '';
-  const dateObj = new Date(booking.createdAt || booking.date);
+  const dateObj = new Date(booking.createdAt || booking.fromDate);
   const year = dateObj.getFullYear();
   const month = String(dateObj.getMonth() + 1).padStart(2, '0');
   const shortId = booking._id ? booking._id.toString().slice(-6).toUpperCase() : 'TEMP';
@@ -59,7 +59,8 @@ export const generateInvoicePDF = (booking, branding) => {
   const bookingDateStr = booking.createdAt 
     ? format(new Date(booking.createdAt), 'dd MMM yyyy')
     : format(new Date(), 'dd MMM yyyy');
-  const eventDateStr = format(new Date(booking.date), 'dd MMM yyyy');
+  const eventDateStr = format(new Date(booking.fromDate), 'dd MMM yyyy') + 
+    (booking.fromDate !== booking.toDate ? ` to ${format(new Date(booking.toDate), 'dd MMM yyyy')}` : '');
   
   // Left Column (Invoice Meta)
   doc.text(`Invoice No:`, 14, 35);
@@ -127,11 +128,19 @@ export const generateInvoicePDF = (booking, branding) => {
     return b.timeSlot || 'Standard Slot';
   };
   
+  const getDuration = () => {
+    if (!booking.fromDate || !booking.toDate) return 1;
+    const diff = new Date(booking.toDate) - new Date(booking.fromDate);
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+    return days > 0 ? days : 1;
+  };
+  
   const rows = [
     { field: "Customer Name", value: booking.customerName },
     { field: "Mobile Number", value: booking.mobile },
     { field: "Venue Name", value: venueLabel },
-    { field: "Event Date", value: eventDateStr },
+    { field: "Booking Period", value: eventDateStr },
+    { field: "Total Days", value: `${getDuration()} Day(s)` },
     { field: "Time Slot / Schedule", value: getSlotDetails(booking) }
   ];
   
@@ -217,7 +226,7 @@ export const generateInvoicePDF = (booking, branding) => {
 
 export const getInvoiceFilename = (booking) => {
   if (!booking) return 'Invoice.pdf';
-  const eventDateStr = format(new Date(booking.date), 'dd-MM-yyyy');
+  const eventDateStr = format(new Date(booking.fromDate), 'dd-MM-yyyy');
   const sanitizedCustomer = booking.customerName.replace(/[^a-zA-Z0-9]/g, '-');
   return `Invoice-${sanitizedCustomer}-${eventDateStr}.pdf`;
 };

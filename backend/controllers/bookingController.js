@@ -37,7 +37,8 @@ export const createBooking = async (req, res) => {
       customerName,
       mobile,
       module,
-      date,
+      fromDate,
+      toDate,
       timeSlot,
       bookingType,
       shootCategory,
@@ -52,7 +53,7 @@ export const createBooking = async (req, res) => {
       peopleCount,
     } = req.body;
 
-    const conflictResult = await validateBookingConflict(module, date, req.body);
+    const conflictResult = await validateBookingConflict(module, req.body);
     if (conflictResult.conflict) {
       return res.status(409).json({ success: false, message: conflictResult.message });
     }
@@ -66,7 +67,8 @@ export const createBooking = async (req, res) => {
       customerName,
       mobile,
       module,
-      date: new Date(date),
+      fromDate: new Date(fromDate),
+      toDate: new Date(toDate),
       timeSlot: timeSlot || '',
       bookingType: bookingType || '',
       shootCategory: shootCategory || '',
@@ -98,7 +100,7 @@ export const createBooking = async (req, res) => {
 
     await Notification.create({
       title: 'New Booking',
-      message: `${customerName} booked ${MODULE_LABELS[module]} on ${new Date(date).toLocaleDateString()}`,
+      message: `${customerName} booked ${MODULE_LABELS[module]} from ${new Date(fromDate).toLocaleDateString()} to ${new Date(toDate).toLocaleDateString()}`,
       type: 'booking',
       module,
       booking: booking._id,
@@ -123,7 +125,6 @@ export const updateBooking = async (req, res) => {
     const mergedDetails = { ...booking.toObject(), ...req.body };
     const conflictResult = await validateBookingConflict(
       mergedDetails.module,
-      mergedDetails.date,
       mergedDetails,
       booking._id
     );
@@ -146,7 +147,8 @@ export const updateBooking = async (req, res) => {
     }
 
     Object.assign(booking, req.body);
-    if (req.body.date) booking.date = new Date(req.body.date);
+    if (req.body.fromDate) booking.fromDate = new Date(req.body.fromDate);
+    if (req.body.toDate) booking.toDate = new Date(req.body.toDate);
     await booking.save();
     await syncCustomerStats(booking.customer);
 
@@ -193,7 +195,7 @@ export const getBookingsByDate = async (req, res) => {
     const end = new Date(date);
     end.setHours(23, 59, 59, 999);
 
-    const filter = { date: { $gte: start, $lte: end }, status: 'active' };
+    const filter = { fromDate: { $lte: end }, toDate: { $gte: start }, status: 'active' };
     if (module) filter.module = module;
 
     const bookings = await Booking.find(filter).sort({ timeSlot: 1 });
@@ -208,7 +210,7 @@ export const getBookingsByModule = async (req, res) => {
     const { module } = req.params;
     const { status = 'active', limit = 50 } = req.query;
     const bookings = await Booking.find({ module, status })
-      .sort({ date: -1 })
+      .sort({ fromDate: -1 })
       .limit(Number(limit));
     res.json({ success: true, data: bookings });
   } catch (error) {

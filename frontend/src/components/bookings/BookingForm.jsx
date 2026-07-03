@@ -9,7 +9,8 @@ export default function BookingForm({ module, initial, defaultDate, onSuccess, o
   const [form, setForm] = useState({
     customerName: '',
     mobile: '',
-    date: defaultDate || new Date().toISOString().split('T')[0],
+    fromDate: defaultDate || new Date().toISOString().split('T')[0],
+    toDate: defaultDate || new Date().toISOString().split('T')[0],
     timeSlot: '',
     bookingType: '',
     shootCategory: '',
@@ -33,7 +34,8 @@ export default function BookingForm({ module, initial, defaultDate, onSuccess, o
       setForm({
         customerName: initial.customerName || '',
         mobile: initial.mobile || '',
-        date: new Date(initial.date).toISOString().split('T')[0],
+        fromDate: initial.fromDate ? new Date(initial.fromDate).toISOString().split('T')[0] : (initial.date ? new Date(initial.date).toISOString().split('T')[0] : ''),
+        toDate: initial.toDate ? new Date(initial.toDate).toISOString().split('T')[0] : (initial.date ? new Date(initial.date).toISOString().split('T')[0] : ''),
         timeSlot: initial.timeSlot || '',
         bookingType: initial.bookingType || '',
         shootCategory: initial.shootCategory || '',
@@ -57,10 +59,24 @@ export default function BookingForm({ module, initial, defaultDate, onSuccess, o
 
   const remaining = Math.max(0, Number(form.totalAmount || 0) - Number(form.advanceAmount || 0));
 
+  const getDuration = () => {
+    if (!form.fromDate || !form.toDate) return 0;
+    const start = new Date(form.fromDate);
+    const end = new Date(form.toDate);
+    const diff = end - start;
+    const days = Math.ceil(diff / (1000 * 60 * 60 * 24)) + 1;
+    return days > 0 ? days : 0;
+  };
+  const duration = getDuration();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.customerName || !form.mobile || !form.date || !form.totalAmount) {
+    if (!form.customerName || !form.mobile || !form.fromDate || !form.toDate || !form.totalAmount) {
       toast.error('Please fill required fields');
+      return;
+    }
+    if (new Date(form.toDate) < new Date(form.fromDate)) {
+      toast.error('To Date cannot be earlier than From Date');
       return;
     }
     if (module === 'shooting' && (!form.startTime || !form.endTime)) {
@@ -117,9 +133,16 @@ export default function BookingForm({ module, initial, defaultDate, onSuccess, o
           <label className="text-[11px] font-semibold text-gray-400 mb-1.5 block uppercase tracking-wider">Mobile Number *</label>
           <input name="mobile" type="tel" value={form.mobile} onChange={handleChange} className="input-modern" placeholder="+91 9876543210" required />
         </div>
-        <div>
-          <label className="text-[11px] font-semibold text-gray-400 mb-1.5 block uppercase tracking-wider">Date *</label>
-          <input name="date" type="date" value={form.date} onChange={handleChange} className="input-modern" required />
+        <div className="sm:col-span-2">
+          <label className="text-[11px] font-semibold text-gray-400 mb-1.5 block uppercase tracking-wider">Booking Period *</label>
+          <div className="grid grid-cols-2 gap-4">
+            <input name="fromDate" type="date" value={form.fromDate} onChange={handleChange} className="input-modern" required />
+            <input name="toDate" type="date" value={form.toDate} onChange={handleChange} className="input-modern" required />
+          </div>
+        </div>
+        <div className="sm:col-span-2 bg-gray-50 rounded-xl p-3 border border-dark-border flex justify-between items-center -mt-2">
+          <span className="text-sm font-medium text-gray-500">Duration</span>
+          <span className="text-sm font-bold text-gray-900">{duration} {duration === 1 ? 'Day' : 'Days'}</span>
         </div>
         {module !== 'cricket' && module !== 'shooting' && module !== 'marriage' && module !== 'banquet' && (
           <div>

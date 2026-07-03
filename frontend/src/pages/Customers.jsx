@@ -179,7 +179,10 @@ export default function Customers() {
                   <div key={b._id} className="p-3 bg-white rounded-lg border border-dark-border text-sm flex justify-between items-center">
                     <div>
                       <p className="font-medium text-gray-900 capitalize">{b.module}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{new Date(b.date).toLocaleDateString()}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {new Date(b.fromDate).toLocaleDateString()} 
+                        {b.fromDate !== b.toDate && ` - ${new Date(b.toDate).toLocaleDateString()}`}
+                      </p>
                     </div>
                     <span className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${b.paymentStatus === 'Paid' ? 'bg-black text-white border-black' : 'bg-gray-100 text-gray-500 border-gray-200'}`}>
                       {b.paymentStatus}
