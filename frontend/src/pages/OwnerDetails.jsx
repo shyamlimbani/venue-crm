@@ -161,19 +161,9 @@ export default function OwnerDetails() {
         {/* Right Column - Stats and Bookings */}
         <div className="lg:col-span-2 space-y-6">
           {/* Stats Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="card-modern p-5 bg-white">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Total Investment</p>
-              <h3 className="text-2xl font-extrabold text-gray-900">₹{Number(user.totalInvestment || 0).toLocaleString('en-IN')}</h3>
-            </div>
-            <div className="card-modern p-5 bg-white">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Total Paid</p>
-              <h3 className="text-2xl font-extrabold text-gray-900">₹{Number(user.totalPaid || 0).toLocaleString('en-IN')}</h3>
-            </div>
-            <div className="card-modern p-5 bg-white">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Remaining</p>
-              <h3 className="text-2xl font-extrabold text-gray-900">₹{Math.max(0, Number(user.totalInvestment || 0) - Number(user.totalPaid || 0)).toLocaleString('en-IN')}</h3>
-            </div>
+          <div className="card-modern p-6 bg-white w-full flex flex-col justify-center">
+            <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Total Paid</p>
+            <h3 className="text-3xl font-extrabold text-gray-900">₹{Number(user.totalPaid || 0).toLocaleString('en-IN')}</h3>
           </div>
 
           {/* Payment History Activity */}

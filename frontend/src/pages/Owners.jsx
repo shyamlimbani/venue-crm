@@ -360,16 +360,6 @@ export default function Owners() {
                 </div>
               </div>
 
-              <div className="sm:col-span-2 border-t border-dark-border pt-4 mt-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Total Investment Amount (₹) *</label>
-                <input 
-                  type="number" 
-                  value={form.totalInvestment} 
-                  onChange={e => setForm({...form, totalInvestment: e.target.value})} 
-                  className="input-modern font-bold" 
-                  required
-                />
-              </div>
 
               {!editingOwner && (
                 <>
