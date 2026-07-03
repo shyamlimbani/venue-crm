@@ -25,10 +25,11 @@ export default function Owners() {
     mobile: '',
     phone: '',
     password: '',
-    address: '',
     ownershipPercentage: 0,
-    bio: '',
-    joinDate: new Date().toISOString().split('T')[0],
+    totalInvestment: '',
+    paymentAmount: '',
+    paymentDate: new Date().toISOString().split('T')[0],
+    paymentMethod: 'Cash',
     profileImage: '',
     isActive: true
   });
@@ -60,10 +61,11 @@ export default function Owners() {
         mobile: owner.mobile || '',
         phone: owner.phone || owner.mobile || '',
         password: '',
-        address: owner.address || '',
         ownershipPercentage: owner.ownershipPercentage || 0,
-        bio: owner.bio || '',
-        joinDate: owner.joinDate ? new Date(owner.joinDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+        totalInvestment: owner.totalInvestment || '',
+        paymentAmount: '',
+        paymentDate: new Date().toISOString().split('T')[0],
+        paymentMethod: 'Cash',
         profileImage: owner.profileImage || '',
         isActive: owner.isActive !== undefined ? owner.isActive : true
       });
@@ -75,10 +77,11 @@ export default function Owners() {
         mobile: '',
         phone: '',
         password: '',
-        address: '',
         ownershipPercentage: 0,
-        bio: '',
-        joinDate: new Date().toISOString().split('T')[0],
+        totalInvestment: '',
+        paymentAmount: '',
+        paymentDate: new Date().toISOString().split('T')[0],
+        paymentMethod: 'Cash',
         profileImage: '',
         isActive: true
       });
@@ -276,7 +279,7 @@ export default function Owners() {
           onClose={() => setIsModalOpen(false)} 
           title={editingOwner ? 'Edit Owner Profile' : 'Add New Owner'}
         >
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-6">
             {/* Image Uploader */}
             <div className="flex flex-col items-center gap-3 p-4 bg-gray-50 rounded-lg border border-dark-border">
               <div className="relative w-20 h-20 rounded-full bg-gray-100 border-2 border-black flex items-center justify-center text-3xl font-bold text-gray-900 overflow-hidden shadow-sm">
@@ -305,38 +308,7 @@ export default function Owners() {
                   required 
                 />
               </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Email *</label>
-                <input 
-                  type="email" 
-                  value={form.email} 
-                  onChange={e => setForm({...form, email: e.target.value})} 
-                  className="input-modern" 
-                  required 
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Mobile / Phone</label>
-                <input 
-                  type="tel" 
-                  value={form.phone} 
-                  onChange={e => setForm({...form, phone: e.target.value, mobile: e.target.value})} 
-                  className="input-modern" 
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">
-                  {editingOwner ? 'New Password (optional)' : 'Password *'}
-                </label>
-                <input 
-                  type="password" 
-                  value={form.password} 
-                  onChange={e => setForm({...form, password: e.target.value})} 
-                  className="input-modern" 
-                  required={!editingOwner} 
-                  minLength={6} 
-                />
-              </div>
+              
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Ownership Share (%)</label>
                 <div className="relative">
@@ -352,39 +324,44 @@ export default function Owners() {
                   <Percent size={14} className="absolute right-3 top-3.5 text-gray-400" />
                 </div>
               </div>
+
               <div>
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Join Date</label>
-                <div className="relative">
-                  <input 
-                    type="date" 
-                    value={form.joinDate} 
-                    onChange={e => setForm({...form, joinDate: e.target.value})} 
-                    className="input-modern" 
-                    required 
-                  />
-                </div>
-              </div>
-              <div className="col-span-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Address</label>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Email *</label>
                 <input 
-                  type="text" 
-                  value={form.address} 
-                  onChange={e => setForm({...form, address: e.target.value})} 
+                  type="email" 
+                  value={form.email} 
+                  onChange={e => setForm({...form, email: e.target.value})} 
+                  className="input-modern" 
+                  required 
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Mobile / Phone</label>
+                <input 
+                  type="tel" 
+                  value={form.phone} 
+                  onChange={e => setForm({...form, phone: e.target.value, mobile: e.target.value})} 
                   className="input-modern" 
                 />
               </div>
-              <div className="col-span-2">
-                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Bio / Notes</label>
-                <textarea 
-                  value={form.bio} 
-                  onChange={e => setForm({...form, bio: e.target.value})} 
-                  className="input-modern h-20 py-2 resize-none" 
-                  placeholder="Tell something about this owner..."
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">
+                  {editingOwner ? 'New Password (optional)' : 'Password *'}
+                </label>
+                <input 
+                  type="password" 
+                  value={form.password} 
+                  onChange={e => setForm({...form, password: e.target.value})} 
+                  className="input-modern" 
+                  required={!editingOwner} 
+                  minLength={6} 
                 />
               </div>
             </div>
 
-            <div className="flex items-center gap-3 pt-2">
+            <div className="flex items-center gap-3">
               <label className="text-sm font-semibold text-gray-700 flex items-center gap-2 cursor-pointer">
                 <input 
                   type="checkbox" 
@@ -394,6 +371,85 @@ export default function Owners() {
                 />
                 Active Owner Account
               </label>
+            </div>
+
+            <div className="border-t border-dark-border pt-6 mt-2 space-y-4">
+              <h3 className="font-bold text-gray-900 flex items-center gap-2">
+                <FileText size={18} className="text-black" />
+                Investment Details
+              </h3>
+
+              <div className="bg-gray-50 p-4 rounded-xl border border-dark-border">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="block text-gray-500 mb-1">Ownership Share</span>
+                    <span className="font-bold text-gray-900">{form.ownershipPercentage || 0}%</span>
+                  </div>
+                  <div>
+                    <span className="block text-gray-500 mb-1">Total Investment</span>
+                    <span className="font-bold text-gray-900">₹{Number(form.totalInvestment || 0).toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="block text-gray-500 mb-1">Total Paid</span>
+                    <span className="font-bold text-gray-900">₹{(editingOwner?.totalPaid || 0 + Number(form.paymentAmount || 0)).toLocaleString('en-IN')}</span>
+                  </div>
+                  <div>
+                    <span className="block text-gray-500 mb-1">Remaining</span>
+                    <span className="font-bold text-gray-900">₹{Math.max(0, Number(form.totalInvestment || 0) - (editingOwner?.totalPaid || 0) - Number(form.paymentAmount || 0)).toLocaleString('en-IN')}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Total Investment Amount (₹) *</label>
+                <input 
+                  type="number" 
+                  value={form.totalInvestment} 
+                  onChange={e => setForm({...form, totalInvestment: e.target.value})} 
+                  className="input-modern font-bold" 
+                  required
+                />
+              </div>
+
+              {!editingOwner && (
+                <div className="pt-4 space-y-4">
+                  <h4 className="font-bold text-gray-900 text-sm">Initial Payment</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Payment Date</label>
+                      <input 
+                        type="date" 
+                        value={form.paymentDate} 
+                        onChange={e => setForm({...form, paymentDate: e.target.value})} 
+                        className="input-modern" 
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Payment Amount (₹)</label>
+                      <input 
+                        type="number" 
+                        value={form.paymentAmount} 
+                        onChange={e => setForm({...form, paymentAmount: e.target.value})} 
+                        className="input-modern" 
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Payment Method</label>
+                      <select 
+                        value={form.paymentMethod} 
+                        onChange={e => setForm({...form, paymentMethod: e.target.value})} 
+                        className="input-modern"
+                      >
+                        <option value="Cash">Cash</option>
+                        <option value="UPI">UPI</option>
+                        <option value="Bank Transfer">Bank Transfer</option>
+                        <option value="Cheque">Cheque</option>
+                        <option value="Card">Card</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 pt-4 border-t border-dark-border mt-6">

@@ -12,10 +12,9 @@ const userSchema = new mongoose.Schema(
     assignedModules: [{ type: String }],
     profileImage: { type: String, default: '' },
     phone: { type: String, default: '' },
-    address: { type: String, default: '' },
     ownershipPercentage: { type: Number, default: 0, min: 0, max: 100 },
-    bio: { type: String, default: '' },
-    joinDate: { type: Date, default: Date.now },
+    totalInvestment: { type: Number, default: 0, min: 0 },
+    totalPaid: { type: Number, default: 0, min: 0 },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

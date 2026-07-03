@@ -6,9 +6,11 @@ import { motion } from 'framer-motion';
 import { 
   ArrowLeft, Mail, Phone, MapPin, Calendar, Percent, 
   BookOpen, Clock, ShieldCheck, User, Trophy, Camera, 
-  Trees, Building2, CheckCircle, HelpCircle, XCircle 
+  Trees, Building2, CheckCircle, HelpCircle, XCircle, Plus, Wallet, FileText
 } from 'lucide-react';
 import LoadingSpinner from '../components/ui/LoadingSpinner';
+import Modal from '../components/ui/Modal';
+import { useAuth } from '../context/AuthContext';
 
 const MODULES_MAP = {
   cricket: { label: 'Cricket Ground', icon: Trophy, color: 'text-gray-900 bg-gray-100 border-gray-200' },
@@ -26,15 +28,28 @@ const PAYMENT_STATUS_COLORS = {
 export default function OwnerDetails() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isSuperAdmin } = useAuth();
   const [data, setData] = useState(null);
+  const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentForm, setPaymentForm] = useState({
+    date: new Date().toISOString().split('T')[0],
+    amount: '',
+    method: 'Cash',
+    notes: ''
+  });
 
   useEffect(() => {
     const fetchOwnerDetails = async () => {
       try {
         setLoading(true);
-        const res = await api.get(`/api/users/${id}`);
+        const [res, paymentsRes] = await Promise.all([
+          api.get(`/api/users/${id}`),
+          api.get(`/api/owner-payments/${id}`)
+        ]);
         setData(res.data.data);
+        setPayments(paymentsRes.data.data);
       } catch (err) {
         toast.error('Failed to load owner profile details');
         navigate('/owners');
@@ -58,6 +73,34 @@ export default function OwnerDetails() {
   };
 
   const badge = getPartnerBadge(pct);
+
+  const handleAddPayment = async (e) => {
+    e.preventDefault();
+    try {
+      const res = await api.post('/api/owner-payments', {
+        ownerId: id,
+        ...paymentForm
+      });
+      toast.success('Payment added successfully');
+      setPayments([res.data.data, ...payments]);
+      setData(prev => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          totalPaid: (prev.user.totalPaid || 0) + Number(paymentForm.amount)
+        }
+      }));
+      setIsPaymentModalOpen(false);
+      setPaymentForm({
+        date: new Date().toISOString().split('T')[0],
+        amount: '',
+        method: 'Cash',
+        notes: ''
+      });
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to add payment');
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -101,12 +144,6 @@ export default function OwnerDetails() {
             <span>{badge.text}</span>
           </div>
 
-          {user.bio && (
-            <div className="mt-6 p-4 rounded-lg bg-gray-50 border border-dark-border text-gray-600 text-sm italic w-full text-left">
-              "{user.bio}"
-            </div>
-          )}
-
           <div className="w-full mt-6 pt-6 border-t border-dark-border space-y-4 text-left text-sm text-gray-600">
             <div className="flex items-center gap-3">
               <Mail size={16} className="text-gray-400 shrink-0" />
@@ -118,120 +155,78 @@ export default function OwnerDetails() {
                 <span>{user.phone || user.mobile}</span>
               </div>
             )}
-            {user.address && (
-              <div className="flex items-start gap-3">
-                <MapPin size={16} className="text-gray-400 shrink-0 mt-0.5" />
-                <span>{user.address}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-3">
-              <Calendar size={16} className="text-gray-400 shrink-0" />
-              <span>Partner since: {new Date(user.joinDate || user.createdAt).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
-            </div>
           </div>
         </div>
 
         {/* Right Column - Stats and Bookings */}
         <div className="lg:col-span-2 space-y-6">
           {/* Stats Row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Ownership Share Card */}
-            <div className="card-modern p-5 flex items-center justify-between overflow-hidden relative bg-white">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Ownership Share</p>
-                <h3 className="text-3xl font-extrabold text-gray-900">{pct}%</h3>
-                <p className="text-xs text-gray-500 font-medium">Partnership Equity in Venue CRM</p>
-              </div>
-              <div className="relative w-16 h-16 shrink-0 flex items-center justify-center">
-                {/* SVG Progress Circle */}
-                <svg className="w-full h-full transform -rotate-90">
-                  <circle cx="32" cy="32" r="28" className="stroke-gray-100" strokeWidth="6" fill="transparent" />
-                  <circle 
-                    cx="32" 
-                    cy="32" 
-                    r="28" 
-                    className="stroke-black" 
-                    strokeWidth="6" 
-                    fill="transparent" 
-                    strokeDasharray={2 * Math.PI * 28} 
-                    strokeDashoffset={2 * Math.PI * 28 * (1 - pct / 100)} 
-                  />
-                </svg>
-                <Percent size={18} className="absolute text-black" />
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="card-modern p-5 bg-white">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Total Investment</p>
+              <h3 className="text-2xl font-extrabold text-gray-900">₹{Number(user.totalInvestment || 0).toLocaleString('en-IN')}</h3>
             </div>
-
-            {/* Total Bookings Card */}
-            <div className="card-modern p-5 flex items-center justify-between overflow-hidden bg-white">
-              <div className="space-y-1">
-                <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">Bookings Created</p>
-                <h3 className="text-3xl font-extrabold text-gray-900">{activity?.totalBookings || 0}</h3>
-                <p className="text-xs text-gray-500 font-medium">Total customer reservations secured</p>
-              </div>
-              <div className="w-12 h-12 rounded-lg bg-gray-100 border border-gray-200 flex items-center justify-center text-black shadow-sm">
-                <BookOpen size={24} />
-              </div>
+            <div className="card-modern p-5 bg-white">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Total Paid</p>
+              <h3 className="text-2xl font-extrabold text-gray-900">₹{Number(user.totalPaid || 0).toLocaleString('en-IN')}</h3>
+            </div>
+            <div className="card-modern p-5 bg-white">
+              <p className="text-xs font-semibold uppercase tracking-wider text-gray-500 mb-2">Remaining</p>
+              <h3 className="text-2xl font-extrabold text-gray-900">₹{Math.max(0, Number(user.totalInvestment || 0) - Number(user.totalPaid || 0)).toLocaleString('en-IN')}</h3>
             </div>
           </div>
 
-          {/* Recent Bookings Activity */}
+          {/* Payment History Activity */}
           <div className="card-modern p-6 bg-white space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2">
-                <Clock className="text-black" size={18} />
-                Recent Booking Activity
+                <Wallet className="text-black" size={18} />
+                Payment History
               </h3>
-              <span className="text-xs text-gray-500 font-medium">Last 5 bookings</span>
+              {isSuperAdmin && (
+                <button 
+                  onClick={() => setIsPaymentModalOpen(true)}
+                  className="btn-primary text-xs py-1.5 px-3 flex items-center gap-1.5"
+                >
+                  <Plus size={14} /> Add Payment
+                </button>
+              )}
             </div>
 
-            {activity?.recentBookings?.length === 0 ? (
+            {payments.length === 0 ? (
               <div className="py-8 text-center text-gray-500 text-sm">
-                No bookings created by this owner yet.
+                No payment history recorded yet.
               </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm border-collapse">
                   <thead>
                     <tr className="border-b border-dark-border text-gray-500 text-xs uppercase font-bold tracking-wider">
-                      <th className="pb-3">Customer</th>
-                      <th className="pb-3">Venue</th>
-                      <th className="pb-3">Date & Slot</th>
-                      <th className="pb-3">Status</th>
+                      <th className="pb-3">Date</th>
+                      <th className="pb-3">Method</th>
+                      <th className="pb-3">Added By</th>
                       <th className="pb-3 text-right">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-dark-border">
-                    {activity?.recentBookings?.map((booking) => {
-                      const mod = MODULES_MAP[booking.module];
-                      const ModIcon = mod?.icon || Building2;
-                      return (
-                        <tr key={booking._id} className="text-gray-700 hover:bg-gray-50 transition-colors group">
-                          <td className="py-3.5 pr-3 font-semibold text-gray-950 truncate max-w-[140px]">
-                            {booking.customerName}
-                          </td>
-                          <td className="py-3.5 pr-3">
-                            <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold border ${mod?.color || 'text-gray-500 border-gray-250 bg-gray-50'}`}>
-                              <ModIcon size={12} />
-                              {mod?.label || booking.module}
-                            </span>
-                          </td>
-                          <td className="py-3.5 pr-3">
-                            <div className="font-semibold text-gray-900">
-                              {new Date(booking.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                            </div>
-                            <div className="text-xs text-gray-500">{booking.timeSlot}</div>
-                          </td>
-                          <td className="py-3.5 pr-3">
-                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border uppercase tracking-wider ${PAYMENT_STATUS_COLORS[booking.paymentStatus] || 'bg-gray-100 text-gray-500 border-gray-200'}`}>
-                              {booking.paymentStatus}
-                            </span>
-                          </td>
-                          <td className="py-3.5 text-right font-bold text-gray-900">
-                            ₹{booking.totalAmount?.toLocaleString('en-IN')}
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {payments.map((payment) => (
+                      <tr key={payment._id} className="text-gray-700 hover:bg-gray-50 transition-colors group">
+                        <td className="py-3.5 pr-3 font-semibold text-gray-900">
+                          {new Date(payment.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </td>
+                        <td className="py-3.5 pr-3">
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-xs font-semibold border bg-gray-100 text-gray-700 border-gray-200">
+                            {payment.method}
+                          </span>
+                        </td>
+                        <td className="py-3.5 pr-3 text-xs text-gray-500">
+                          {payment.addedBy?.name || 'Admin'}
+                        </td>
+                        <td className="py-3.5 text-right font-bold text-gray-900">
+                          ₹{payment.amount?.toLocaleString('en-IN')}
+                        </td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
               </div>
@@ -239,6 +234,64 @@ export default function OwnerDetails() {
           </div>
         </div>
       </div>
+
+      <Modal 
+        isOpen={isPaymentModalOpen} 
+        onClose={() => setIsPaymentModalOpen(false)} 
+        title="Add Owner Payment"
+      >
+        <form onSubmit={handleAddPayment} className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Payment Date *</label>
+              <input 
+                type="date" 
+                value={paymentForm.date} 
+                onChange={e => setPaymentForm({...paymentForm, date: e.target.value})} 
+                className="input-modern" 
+                required 
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Amount (₹) *</label>
+              <input 
+                type="number" 
+                value={paymentForm.amount} 
+                onChange={e => setPaymentForm({...paymentForm, amount: e.target.value})} 
+                className="input-modern" 
+                required 
+                min="1"
+              />
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Payment Method *</label>
+              <select 
+                value={paymentForm.method} 
+                onChange={e => setPaymentForm({...paymentForm, method: e.target.value})} 
+                className="input-modern"
+              >
+                <option value="Cash">Cash</option>
+                <option value="UPI">UPI</option>
+                <option value="Bank Transfer">Bank Transfer</option>
+                <option value="Cheque">Cheque</option>
+                <option value="Card">Card</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 block">Notes (Optional)</label>
+              <textarea 
+                value={paymentForm.notes} 
+                onChange={e => setPaymentForm({...paymentForm, notes: e.target.value})} 
+                className="input-modern h-20 resize-none" 
+              />
+            </div>
+          </div>
+          <div className="flex gap-3 pt-4 border-t border-dark-border mt-6">
+            <button type="button" onClick={() => setIsPaymentModalOpen(false)} className="btn-outline flex-1">Cancel</button>
+            <button type="submit" className="btn-primary flex-1">Save Payment</button>
+          </div>
+        </form>
+      </Modal>
     </div>
   );
 }

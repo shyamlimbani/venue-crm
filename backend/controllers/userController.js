@@ -1,5 +1,6 @@
 import User from '../models/User.js';
 import Booking from '../models/Booking.js';
+import OwnerPayment from '../models/OwnerPayment.js';
 
 export const getAllUsers = async (req, res) => {
   try {
@@ -14,7 +15,8 @@ export const createUser = async (req, res) => {
   try {
     const { 
       name, email, mobile, password, role, permissions, assignedModules,
-      profileImage, phone, address, ownershipPercentage, bio, joinDate
+      profileImage, phone, ownershipPercentage, totalInvestment,
+      paymentAmount, paymentDate, paymentMethod
     } = req.body;
     
     // Only admin can create admins/owners
@@ -39,11 +41,20 @@ export const createUser = async (req, res) => {
       assignedModules,
       profileImage,
       phone,
-      address,
       ownershipPercentage,
-      bio,
-      joinDate,
+      totalInvestment: totalInvestment || 0,
+      totalPaid: paymentAmount ? Number(paymentAmount) : 0,
     });
+
+    if (role === 'owner' && paymentAmount && Number(paymentAmount) > 0) {
+      await OwnerPayment.create({
+        owner: user._id,
+        amount: Number(paymentAmount),
+        date: paymentDate || Date.now(),
+        method: paymentMethod || 'Cash',
+        addedBy: req.user._id
+      });
+    }
 
     res.status(201).json({ success: true, data: { _id: user._id, name: user.name, role: user.role } });
   } catch (error) {
@@ -60,7 +71,7 @@ export const updateUser = async (req, res) => {
 
     const { 
       name, email, mobile, role, permissions, assignedModules, isActive, password,
-      profileImage, phone, address, ownershipPercentage, bio, joinDate
+      profileImage, phone, ownershipPercentage, totalInvestment
     } = req.body;
 
     // Only admin can elevate to admin/owner
@@ -81,10 +92,8 @@ export const updateUser = async (req, res) => {
     
     if (profileImage !== undefined) user.profileImage = profileImage;
     if (phone !== undefined) user.phone = phone;
-    if (address !== undefined) user.address = address;
     if (ownershipPercentage !== undefined) user.ownershipPercentage = ownershipPercentage;
-    if (bio !== undefined) user.bio = bio;
-    if (joinDate !== undefined) user.joinDate = joinDate;
+    if (totalInvestment !== undefined) user.totalInvestment = totalInvestment;
 
     const updatedUser = await user.save();
     res.json({

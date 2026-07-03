@@ -20,6 +20,7 @@ import reportRoutes from './routes/reportRoutes.js';
 import userRoutes from './routes/userRoutes.js';
 import expenseRoutes from './routes/expenseRoutes.js';
 import brandingRoutes from './routes/brandingRoutes.js';
+import ownerPaymentRoutes from './routes/ownerPaymentRoutes.js';
 import { restrictTo } from './middleware/auth.js';
 
 const app = express();
@@ -81,6 +82,7 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/branding', brandingRoutes);
+app.use('/api/owner-payments', ownerPaymentRoutes);
 
 // ─── 5. Errors last ──────────────────────────────────────────────────────────
 app.use(notFound);
